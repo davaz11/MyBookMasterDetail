@@ -63,7 +63,7 @@ public class BookDetailActivity extends AppCompatActivity {
             }
 
 
-            //desde el fragment se cargan los datos del layout hhghgh
+            //desde el fragment se cargan los datos del layout hhghgh  kgkjh
             if (savedInstanceState == null) {
 
                 Bundle arguments = new Bundle();
