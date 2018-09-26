@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MyBookMasterDetail</string>
+    <string name="title_item_detail">Book D2etail</string>
+    <string name="textView_detail_par_autor">Autor</string>
+    <string name="textView_detail_par_date">Fecha de Publicación</string>
+    <string name="textView_detail_par_nameDescription">Descripción</string>
+</resources>

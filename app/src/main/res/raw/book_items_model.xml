@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<books xmlns:datosWeb="http://ejemplos.hermosprogramacion.com/hoteles-roma">
+    <book>
+        <id>1</id>
+        <name>La mancha humana </name>
+        <autor>Philip Roth</autor>
+        <date>30-08-2010</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>america</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[Trata de un escándalo en los ambientes universitarios que refleja otro mayor,causado en los ambientes políticos por la acusación contra el presidente estadounidense Bill Clinton en 1998. El director Robert Benton la adaptó al cine; la película homónima, estrenada en 2003, está protagonizada por Anthony Hopkins y Nicole Kidman, entre otros. ]]>
+        </datosWeb:descripcion>
+    </book>
+
+    <book>
+        <id>2</id>
+        <name>La conjura contra América</name>
+        <autor>Philip Roth</autor>
+        <date>01-10-2000</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>comunista</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[Ejercicio de historia alternativa en la que el héroe de aviación Charles Lindbergh gana la presidencia, realiza un pacto con Hitler y derrota a Franklin D. Roosevelt. ]]>
+        </datosWeb:descripcion>
+    </book>
+
+    <book>
+        <id>3</id>
+        <name>Elegía</name>
+        <autor>Philip Roth</autor>
+        <date>31-05-1998</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>sabath</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[Reflexiona sobre la vejez y la mortalidad tras una complicada operación quirúrgica del protagonista. ]]>
+        </datosWeb:descripcion>
+    </book>
+    <book>
+        <id>4</id>
+        <name>Me casé con un comunista</name>
+        <autor>Philip Roth</autor>
+        <date>30-08-1999</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>shop_talk</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[cuenta la historia de un hombre cuya esposa se vuelve contra él en
+            el período de fervor anticomunista en
+            los Estados Unidos durante finales de los años 1940 y a principios de los 50. ]]>
+        </datosWeb:descripcion>
+    </book>
+    <book>
+        <id>5</id>
+        <name>La Gran Novela americana</name>
+        <autor>Philip Roth</autor>
+        <date>30-05-1999</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>novela_americana</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[cuenta la historia de un hombre cuya esposa se vuelve contra él en
+            el período de fervor anticomunista en
+            los Estados Unidos durante finales de los años 1940 y a principios de los 50. ]]>
+        </datosWeb:descripcion>
+    </book>
+    <book>
+        <id>6</id>
+        <name>La mancha humana </name>
+        <autor>Philip Roth</autor>
+        <date>30-08-2010</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>america</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[Trata de un escándalo en los ambientes universitarios que refleja otro mayor,causado en los ambientes políticos por la acusación contra el presidente estadounidense Bill Clinton en 1998. El director Robert Benton la adaptó al cine; la película homónima, estrenada en 2003, está protagonizada por Anthony Hopkins y Nicole Kidman, entre otros. ]]>
+        </datosWeb:descripcion>
+    </book>
+
+    <book>
+        <id>7</id>
+        <name>La conjura contra América</name>
+        <autor>Philip Roth</autor>
+        <date>01-10-2000</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>comunista</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[Ejercicio de historia alternativa en la que el héroe de aviación Charles Lindbergh gana la presidencia, realiza un pacto con Hitler y derrota a Franklin D. Roosevelt. ]]>
+        </datosWeb:descripcion>
+    </book>
+
+    <book>
+        <id>8</id>
+        <name>Elegía</name>
+        <autor>Philip Roth</autor>
+        <date>31-05-1998</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>sabath</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[Reflexiona sobre la vejez y la mortalidad tras una complicada operación quirúrgica del protagonista. ]]>
+        </datosWeb:descripcion>
+    </book>
+    <book>
+        <id>9</id>
+        <name>Me casé con un comunista</name>
+        <autor>Philip Roth</autor>
+        <date>30-08-1999</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>shop_talk</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[cuenta la historia de un hombre cuya esposa se vuelve contra él en
+            el período de fervor anticomunista en
+            los Estados Unidos durante finales de los años 1940 y a principios de los 50. ]]>
+        </datosWeb:descripcion>
+    </book>
+    <book>
+        <id>10</id>
+        <name>La Gran Novela americana</name>
+        <autor>Philip Roth</autor>
+        <date>30-05-1999</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>novela_americana</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[cuenta la historia de un hombre cuya esposa se vuelve contra él en
+            el período de fervor anticomunista en
+            los Estados Unidos durante finales de los años 1940 y a principios de los 50. ]]>
+        </datosWeb:descripcion>
+    </book>
+
+    <book>
+        <id>11</id>
+        <name>La mancha humana </name>
+        <autor>Philip Roth</autor>
+        <date>30-08-2010</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>america</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[Trata de un escándalo en los ambientes universitarios que refleja otro mayor,causado en los ambientes políticos por la acusación contra el presidente estadounidense Bill Clinton en 1998. El director Robert Benton la adaptó al cine; la película homónima, estrenada en 2003, está protagonizada por Anthony Hopkins y Nicole Kidman, entre otros. ]]>
+        </datosWeb:descripcion>
+    </book>
+
+    <book>
+        <id>12</id>
+        <name>La conjura contra América</name>
+        <autor>Philip Roth</autor>
+        <date>01-10-2000</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>comunista</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[Ejercicio de historia alternativa en la que el héroe de aviación Charles Lindbergh gana la presidencia, realiza un pacto con Hitler y derrota a Franklin D. Roosevelt. ]]>
+        </datosWeb:descripcion>
+    </book>
+
+    <book>
+        <id>13</id>
+        <name>Elegía</name>
+        <autor>Philip Roth</autor>
+        <date>31-05-1998</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>sabath</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[Reflexiona sobre la vejez y la mortalidad tras una complicada operación quirúrgica del protagonista. ]]>
+        </datosWeb:descripcion>
+    </book>
+    <book>
+        <id>14</id>
+        <name>Me casé con un comunista</name>
+        <autor>Philip Roth</autor>
+        <date>30-08-1999</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>shop_talk</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[cuenta la historia de un hombre cuya esposa se vuelve contra él en
+            el período de fervor anticomunista en
+            los Estados Unidos durante finales de los años 1940 y a principios de los 50. ]]>
+        </datosWeb:descripcion>
+    </book>
+    <book>
+        <id>15</id>
+        <name>La Gran Novela americana</name>
+        <autor>Philip Roth</autor>
+        <date>30-05-1999</date>
+        <valoracion calificacion="4.5" noOpiniones="230" />
+        <urlImagen>novela_americana</urlImagen>
+        <datosWeb:descripcion>
+            <![CDATA[cuenta la historia de un hombre cuya esposa se vuelve contra él en
+            el período de fervor anticomunista en
+            los Estados Unidos durante finales de los años 1940 y a principios de los 50. ]]>
+        </datosWeb:descripcion>
+    </book>
+</books>
