@@ -1,4 +1,5 @@
 package com.example.dani.mybookmasterdetail;
+import com.example.dani.mybookmasterdetail.helperClasses.DeviceType;
 import com.example.dani.mybookmasterdetail.model.BookItem;
 import com.example.dani.mybookmasterdetail.parserXML.ParserXML;
 
@@ -49,6 +50,9 @@ public class BookListActivity extends AppCompatActivity {
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
+    public boolean isTablet;
+    public boolean isPhone;
+
     private boolean mTwoPane;
     public static final String TAG = "MainActivity";
     public List<BookItem> bookItemList;
@@ -84,6 +88,15 @@ public class BookListActivity extends AppCompatActivity {
     View recyclerView = findViewById(R.id.item_list);
     assert recyclerView != null;
     setupRecyclerView((RecyclerView) recyclerView);
+
+
+
+        //código para saber si se está ejecutando desde una tablet o desde un móvi
+        // Para saber si es tablet
+        isTablet= DeviceType.isTablet(getApplicationContext());
+        // Para saber si es teléfono
+        isPhone=DeviceType.isPhone(getApplicationContext());
+
 
     }catch (Exception e)
     {
