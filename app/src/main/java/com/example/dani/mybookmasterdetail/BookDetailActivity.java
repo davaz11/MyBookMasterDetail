@@ -1,10 +1,11 @@
 package com.example.dani.mybookmasterdetail;
 
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.v7.widget.CardView;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.support.v7.app.AppCompatActivity;
@@ -31,17 +32,10 @@ public class BookDetailActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
 
 
-            BookItem item =(BookItem)getIntent().getSerializableExtra(BookDetailFragment.ARG_ITEM_ID);
+            BookItem item =(BookItem)getIntent().getSerializableExtra(BookDetailFragmentImpar.ARG_ITEM_ID);
 
-            //se elige un layout según el id del item
-            if(item.identificador%2==0)
-            {
-                setContentView(R.layout.activity_item_detail_par);
+            setContentView(R.layout.activity_item_detail);
 
-            }else{
-
-                setContentView(R.layout.activity_item_detail);
-            }
 
 
             Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
@@ -61,14 +55,27 @@ public class BookDetailActivity extends AppCompatActivity {
             if (actionBar != null) {
                 actionBar.setDisplayHomeAsUpEnabled(true);
             }
-
-
-            //desde el fragment se cargan los datos del layout hhghgh  kgkjh
+            //desde el fragment se cargan los datos del layout
             if (savedInstanceState == null) {
 
+
+
+                Fragment fragment=null;
+
+                //se elige un layout y el fragment
+                if(item.identificador%2==0)
+                {
+                    fragment = new BookDetailFragmentPar();
+
+                }else{
+                    fragment = new BookDetailFragmentImpar();
+
+                }
+
+
                 Bundle arguments = new Bundle();
-                arguments.putSerializable(BookDetailFragment.ARG_ITEM_ID, item);
-                BookDetailFragment fragment = new BookDetailFragment();
+                arguments.putSerializable(BookDetailFragmentImpar.ARG_ITEM_ID, item);
+               // BookDetailFragmentImpar fragment = new BookDetailFragmentImpar();
                 fragment.setArguments(arguments);
                 getSupportFragmentManager().beginTransaction()
                         .add(R.id.item_detail_container, fragment)

@@ -25,8 +25,8 @@
         android:layout_width="@dimen/item_width"
         android:layout_height="match_parent"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
         app:layoutManager="LinearLayoutManager"
+        android:layout_marginRight="16dp"
         tools:context="com.example.dani.mybookmasterdetail.ItemListActivity"
         tools:listitem="@layout/item_list_content" />
 

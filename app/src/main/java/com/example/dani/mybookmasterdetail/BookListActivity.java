@@ -5,12 +5,8 @@ import com.example.dani.mybookmasterdetail.parserXML.ParserXML;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.XmlResourceParser;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -21,19 +17,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import com.example.dani.mybookmasterdetail.model.Model;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.List;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
 
-import com.example.dani.mybookmasterdetail.logger.Log;
-import com.example.dani.mybookmasterdetail.logger.LogFragment;
-import com.example.dani.mybookmasterdetail.logger.LogWrapper;
-import com.example.dani.mybookmasterdetail.logger.MessageOnlyLogFilter;
+import org.xmlpull.v1.XmlPullParserException;
 
 
 /**
@@ -189,8 +178,8 @@ public class BookListActivity extends AppCompatActivity {
                     BookItem item = (BookItem) view.getTag();
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putString(BookDetailFragment.ARG_ITEM_ID, Integer.toString(item.identificador));
-                        BookDetailFragment fragment = new BookDetailFragment();
+                        arguments.putSerializable(BookDetailFragmentImpar.ARG_ITEM_ID, item);
+                        BookDetailFragmentImpar fragment = new BookDetailFragmentImpar();
                         fragment.setArguments(arguments);
                         mParentActivity.getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.item_detail_container, fragment)
@@ -199,7 +188,7 @@ public class BookListActivity extends AppCompatActivity {
                         //Se envia el item seleccionado en el intent para utilizarlo en la siguiente pantalla
                         Context context = view.getContext();
                         Intent intent = new Intent(context, BookDetailActivity.class);
-                        intent.putExtra(BookDetailFragment.ARG_ITEM_ID, item);
+                        intent.putExtra(BookDetailFragmentImpar.ARG_ITEM_ID, item);
                         context.startActivity(intent);
                     }
                 } catch (Exception e) {

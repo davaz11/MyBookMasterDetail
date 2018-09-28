@@ -4,4 +4,7 @@
     <string name="textView_detail_par_autor">Autor</string>
     <string name="textView_detail_par_date">Fecha de Publicación</string>
     <string name="textView_detail_par_nameDescription">Descripción</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
