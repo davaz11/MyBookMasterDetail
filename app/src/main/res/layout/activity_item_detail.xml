@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:context=".BookDetailActivity"
+
     tools:ignore="MergeRootFrame">
 
 
@@ -37,14 +38,19 @@
 
     </android.support.design.widget.AppBarLayout>
 
-
-
     <LinearLayout
         android:id="@+id/item_detail_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="200dp"
         android:orientation="horizontal"/>
+
+    <!--<LinearLayout
+        android:id="@+id/item_detail_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="200dp"
+        android:orientation="horizontal"/>-->
 
 
     <android.support.design.widget.FloatingActionButton
