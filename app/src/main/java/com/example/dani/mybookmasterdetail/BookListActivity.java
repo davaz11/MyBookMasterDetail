@@ -1,7 +1,17 @@
 package com.example.dani.mybookmasterdetail;
 import com.example.dani.mybookmasterdetail.helperClasses.DeviceType;
+import com.example.dani.mybookmasterdetail.logger.Log;
 import com.example.dani.mybookmasterdetail.model.BookItem;
 import com.example.dani.mybookmasterdetail.parserXML.ParserXML;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,10 +27,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -46,11 +59,21 @@ public class BookListActivity extends AppCompatActivity {
     public static final String TAG = "MainActivity";
     public List<BookItem> bookItemList;
 
+    private FirebaseAuth mAuth;
+    private FirebaseDatabase database;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
     try {
+
+
+
+
+    FirebaseDataBaseConnection();
+   SignInWithEmailAndPassword("danivaz25@gmail.com","firebaseTest");
 
     //Se cargan los datos desde un xml
     bookItemList=parseXMLbooks();
@@ -127,42 +150,83 @@ public class BookListActivity extends AppCompatActivity {
 
     }
 
-    /** Create a chain of targets that will receive log data */
-  /*   public void initializeLogging() {
-        try {
-            // Wraps Android's native log framework.
-            LogWrapper logWrapper = new LogWrapper();
-            // Using Log, front-end to the logging chain, emulates android.util.log method signatures.
-            Log.setLogNode(logWrapper);
 
-            // Filter strips out everything except the message text.
-            MessageOnlyLogFilter msgFilter = new MessageOnlyLogFilter();
-            logWrapper.setNext(msgFilter);
+    private void FirebaseDataBaseConnection()
+    {
+        //conexion con base de datos de firebase
+        mAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
 
-            // On screen logging via a fragment with a TextView.
-
-
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            LogFragment fragment = new LogFragment();
-            fragmentTransaction.add(R.id.log_fragment, fragment);
-            fragmentTransaction.commit();
-
-            /*FragmentManager fragMan=getSupportFragmentManager();
-            com.example.dani.mybookmasterdetail.logger.LogFragment logFragment2 =(com.example.dani.mybookmasterdetail.logger.LogFragment)fragMan.findFragmentById(R.id.log_fragment);
-            LogFragment logFragment = (LogFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.log_fragment);
-            msgFilter.setNext(logFragment.getLogView());
-            logFragment.getLogView().setTextAppearance(this, R.style.Log);
-            logFragment.getLogView().setBackgroundColor(Color.WHITE);
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    GetCurrentUser();
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+                }
+                // ...
+            }
+        };
+    }
 
 
-            Log.i(TAG, "Ready");
-        } catch (Exception e) {
-            e.printStackTrace();
+        //https://firebase.google.com/docs/auth/android/start/
+        private void SignInWithEmailAndPassword(String email, String password)
+        {
+            mAuth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
+                            if (!task.isSuccessful()) {
+                                Log.w(TAG, "signInWithEmail:failed", task.getException());
+
+                            }
+
+                            GetCurrentUser();
+                            ReadDatabaseFire();
+
+                        }
+                    });
         }
-    }*/
 
+        private void GetCurrentUser()
+        {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null) {
+
+                String name = user.getDisplayName();
+                String email = user.getEmail();
+                String uid = user.getUid();
+                String uid2 = user.getUid();
+            }
+        }
+
+        private Map<String, Object> dataFire;
+
+        private void ReadDatabaseFire()
+        {
+
+            database.getReference().addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    dataFire = (Map<String, Object>) dataSnapshot.getValue();
+
+                    Log.d(TAG, "Value is: " + dataFire);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError error) {
+
+                    Log.w(TAG, "Failed to read value.", error.toException());
+                }
+            });
+        }
 
     public static class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
@@ -290,6 +354,17 @@ public class BookListActivity extends AppCompatActivity {
 
 
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
+    }
 
-
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
+    }
 }
