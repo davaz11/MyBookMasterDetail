@@ -212,10 +212,13 @@ public class BookListActivity extends AppCompatActivity {
 
             try {
 
-                View view = LayoutInflater.from(parent.getContext())
+                return ChooseDiferentCardLayout(parent,viewType);
+
+               /* View view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.item_list_content, parent, false);
 
                 return new ViewHolder(view);
+                */
 
             }catch (Exception e)
             {
@@ -224,6 +227,25 @@ public class BookListActivity extends AppCompatActivity {
             }
         }
 
+        int cardPosition=1;
+        private ViewHolder ChooseDiferentCardLayout(ViewGroup parent, int viewType)
+        {
+            View view;
+            if(cardPosition %2==0){
+
+                view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_list_content, parent, false);
+
+            }else{
+
+                view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_list_content_impar, parent, false);
+
+            }
+
+            cardPosition++;
+            return new ViewHolder(view);
+        }
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
@@ -236,14 +258,14 @@ public class BookListActivity extends AppCompatActivity {
 
             //se pintan la card de diferente color segun sea par o impar
 
-            if(mValues.get(position).identificador %2==0){
+         /*   if(mValues.get(position).identificador %2==0){
 
                 holder.cardView.setCardBackgroundColor(holder.vi.getResources().getColor(R.color.backGroundCardPar));
 
             }else{
 
                 holder.cardView.setCardBackgroundColor(holder.vi.getResources().getColor(R.color.backGroundCard));
-            }
+            }*/
 
             holder.itemView.setTag(mValues.get(position));
             holder.itemView.setOnClickListener(mOnClickListener);
