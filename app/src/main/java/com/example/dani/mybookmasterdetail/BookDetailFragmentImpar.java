@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.dani.mybookmasterdetail.model.BookItem;
+import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 
 
 /**
@@ -46,14 +47,14 @@ public class BookDetailFragmentImpar extends Fragment {
         try {
             if (getArguments().containsKey(ARG_ITEM_ID)) {
 
-                BookItem item = (BookItem)getArguments().getSerializable(ARG_ITEM_ID);
+                Book item = (Book)getArguments().getSerializable(ARG_ITEM_ID);
                 Activity activity = this.getActivity();
 
 
                 //se setea el título
                 CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
                 if (appBarLayout != null) {
-                    appBarLayout.setTitle(item.titulo);
+                    appBarLayout.setTitle(item.title);
                 }
 
             }
@@ -65,15 +66,15 @@ public class BookDetailFragmentImpar extends Fragment {
 
 
 
-    private void setContentImpar(BookItem item,View activity){
+    private void setContentImpar(Book item,View activity){
 
         try {
             TextView tViewNameDesc = (TextView) activity.findViewById(R.id.textView_item_detail);
             //lleno de texto para ver el scrollview
-            tViewNameDesc.setText(item.descripcio+item.descripcio+item.descripcio+item.descripcio+item.descripcio+item.descripcio+item.descripcio+item.descripcio+item.descripcio+item.descripcio);
+            tViewNameDesc.setText(item.description+item.description+item.description+item.description+item.description+item.description+item.description+item.description+item.description+item.description);
 
             //se cargan las imagenes de forma dinámica desde los datos en el xml
-            int idImage = getResources().getIdentifier(getContext().getPackageName() + ":drawable/" + item.urlImagen, null, null);
+            int idImage = getResources().getIdentifier(getContext().getPackageName() + ":drawable/" + item.url_imagen, null, null);
             ImageView image = activity.findViewById(R.id.imageView2);
             image.setImageResource(idImage);
 
@@ -89,7 +90,7 @@ public class BookDetailFragmentImpar extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        BookItem item = (BookItem)getArguments().getSerializable(ARG_ITEM_ID);
+        Book item = (Book)getArguments().getSerializable(ARG_ITEM_ID);
         View vImpar = inflater.inflate(R.layout.fragment_detail_impar, container, false);
         setContentImpar(item,vImpar);
         return vImpar;

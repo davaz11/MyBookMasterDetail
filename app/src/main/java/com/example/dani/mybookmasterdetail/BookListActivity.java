@@ -2,6 +2,9 @@ package com.example.dani.mybookmasterdetail;
 import com.example.dani.mybookmasterdetail.helperClasses.DeviceType;
 import com.example.dani.mybookmasterdetail.logger.Log;
 import com.example.dani.mybookmasterdetail.model.BookItem;
+import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
+import com.example.dani.mybookmasterdetail.modelRealmORM.BookContent;
+import com.example.dani.mybookmasterdetail.modelSQLite.BookSQLite;
 import com.example.dani.mybookmasterdetail.parserXML.ParserXML;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -11,8 +14,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,15 +30,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.xmlpull.v1.XmlPullParserException;
+import io.realm.Realm;
 
 
 /**
@@ -58,48 +65,55 @@ public class BookListActivity extends AppCompatActivity {
     private boolean mTwoPane;
     public static final String TAG = "MainActivity";
     public List<BookItem> bookItemList;
+    public List<Book> bookListApp;
 
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    Realm realm;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
     try {
+        super.onCreate(savedInstanceState);
+      // SugarContext.init(getApplicationContext());
+
+      Context c=getApplicationContext();
+
+      //TO LOAD REALM DATA
+       Realm.init(c);
+       realm = Realm.getDefaultInstance();
 
 
+        //LOAD FIREBASE DATA
+        FirebaseDataBaseConnection();
+        SignInWithEmailAndPassword("danivaz25@gmail.com","firebaseTest");
 
 
-    FirebaseDataBaseConnection();
-   SignInWithEmailAndPassword("danivaz25@gmail.com","firebaseTest");
+        //TO LOAD XML DATA
+       //bookItemList=parseXMLbooks();
 
-    //Se cargan los datos desde un xml
-    bookItemList=parseXMLbooks();
+        setContentView(R.layout.activity_item_list);
 
-    setContentView(R.layout.activity_item_list);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.setTitle(getTitle());
 
-    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-    setSupportActionBar(toolbar);
-    toolbar.setTitle(getTitle());
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
 
-    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-    fab.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
+        if (findViewById(R.id.item_detail_container) != null) {
+            mTwoPane = true;
         }
-    });
 
-    if (findViewById(R.id.item_detail_container) != null) {
-        mTwoPane = true;
-    }
 
-    View recyclerView = findViewById(R.id.item_list);
-    assert recyclerView != null;
-    setupRecyclerView((RecyclerView) recyclerView);
 
 
 
@@ -117,11 +131,18 @@ public class BookListActivity extends AppCompatActivity {
     }
 
 
+private void LoadRecliclerView(){
+
+    View recyclerView = findViewById(R.id.item_list);
+    assert recyclerView != null;
+    setupRecyclerView((RecyclerView) recyclerView);
+
+}
 
 
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, bookItemList, mTwoPane));
+        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, bookListApp, mTwoPane));
     }
 
 
@@ -150,7 +171,7 @@ public class BookListActivity extends AppCompatActivity {
 
     }
 
-
+//region FIREBUG_CONNECTION
     private void FirebaseDataBaseConnection()
     {
         //conexion con base de datos de firebase
@@ -206,40 +227,109 @@ public class BookListActivity extends AppCompatActivity {
             }
         }
 
-        private Map<String, Object> dataFire;
 
         private void ReadDatabaseFire()
         {
-
             database.getReference().addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    dataFire = (Map<String, Object>) dataSnapshot.getValue();
+                    try {
+                       // dataFromFireBase = (Map<String, Object>) dataSnapshot.getValue();
 
-                    Log.d(TAG, "Value is: " + dataFire);
+                        Log.d(TAG, "Data from FireBase changed");
+
+                       // List<Book> bookList=DataSnapshotToList(dataSnapshot);
+                        bookListApp=BookContent.ParseFireBaseDataToObject(dataSnapshot);
+
+                        LoadRecliclerView();
+
+                        BookContent.SetBooks(realm,bookListApp);
+
+                        Log.d(TAG, "Realm DataBase Updated"+BookContent.numberBooksUpdated);
+                        BookContent.numberBooksUpdated=0;
+
+
+                        //LOAD SQLITE
+
+                        BookSQLite.InsertSQLite(getApplicationContext());
+
+
+                    } catch (Exception e) {
+                        Log.w(TAG, "Error - Data from FireBase changed");
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
                 public void onCancelled(DatabaseError error) {
+
+
+                    bookListApp= BookContent.GetBooks(realm);
+                    LoadRecliclerView();
 
                     Log.w(TAG, "Failed to read value.", error.toException());
                 }
             });
         }
 
+
+
+
+
+
+
+
+      private List<Book> DataSnapshotToList(DataSnapshot dataSnapshot)
+      {
+
+          try {
+
+
+              GenericTypeIndicator<List<Book>> t = new GenericTypeIndicator<List<Book>>() {};
+              Object o=dataSnapshot.getValue(t);
+              List<Book> booksList = dataSnapshot.getValue(t);
+              return booksList;
+
+
+              /*Gson gson = new Gson();
+              JsonElement s3 = gson.toJsonTree(dataSnapshot.getValue());
+              Object obj=dataSnapshot.getValue();
+              String s1 = gson.toJson(dataSnapshot.getValue());
+
+              s3.isJsonArray();
+              boolean v=s3.isJsonObject();
+
+              JsonArray ar=s3.getAsJsonArray();
+
+              JSONArray jsonArray = new JSONArray();
+              realm.beginTransaction();
+              realm.createOrUpdateAllFromJson(Book.class,jsonArray);
+              realm.commitTransaction();*/
+          } catch (Exception e) {
+              e.printStackTrace();
+              return null;
+          }
+      }
+
+
+//endregion
+
+
+
+
     public static class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
 
         private final BookListActivity mParentActivity;
-        private final List<BookItem> mValues;
+        private final List<Book> mValues;
         private final boolean mTwoPane;
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 try {
-                    BookItem item = (BookItem) view.getTag();
+                    Book item = (Book) view.getTag();
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
                         arguments.putSerializable(BookDetailFragmentImpar.ARG_ITEM_ID, item);
@@ -262,7 +352,7 @@ public class BookListActivity extends AppCompatActivity {
         };
 
         SimpleItemRecyclerViewAdapter(BookListActivity parent,
-                                      List<BookItem> items,
+                                      List<Book> items,
                                       boolean twoPane) {
             mValues = items;
             mParentActivity = parent;
@@ -296,7 +386,7 @@ public class BookListActivity extends AppCompatActivity {
 
 
             holder.mIdView.setText(Integer.toString(mValues.get(position).identificador));
-            holder.mContentView.setText(mValues.get(position).titulo);
+            holder.mContentView.setText(mValues.get(position).title);
 
             //se pintan la card de diferente color segun sea par o impar
 
@@ -354,12 +444,18 @@ public class BookListActivity extends AppCompatActivity {
 
 
 
-    @Override
+
+
+   @Override
     public void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
     }
 
+
+
+
+    /*
     @Override
     public void onStop() {
         super.onStop();
@@ -367,4 +463,11 @@ public class BookListActivity extends AppCompatActivity {
             mAuth.removeAuthStateListener(mAuthListener);
         }
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        SugarContext.terminate();
+    }
+*/
 }

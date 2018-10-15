@@ -14,6 +14,7 @@ import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
 import com.example.dani.mybookmasterdetail.model.BookItem;
+import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 
 /**
  * An activity representing a single Item detail screen. This
@@ -32,7 +33,7 @@ public class BookDetailActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
 
 
-            BookItem item =(BookItem)getIntent().getSerializableExtra(BookDetailFragmentImpar.ARG_ITEM_ID);
+            Book item =(Book)getIntent().getSerializableExtra(BookDetailFragmentImpar.ARG_ITEM_ID);
 
             setContentView(R.layout.activity_item_detail);
 

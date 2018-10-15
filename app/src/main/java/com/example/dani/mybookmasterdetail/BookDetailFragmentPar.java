@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.dani.mybookmasterdetail.model.BookItem;
+import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -39,14 +40,14 @@ public class BookDetailFragmentPar extends Fragment {
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
 
-            BookItem item = (BookItem)getArguments().getSerializable(ARG_ITEM_ID);
+            Book item = (Book)getArguments().getSerializable(ARG_ITEM_ID);
             Activity activity = this.getActivity();
 
 
             //se setea el título
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
-                appBarLayout.setTitle(item.titulo);
+                appBarLayout.setTitle(item.title);
             }
 
         }
@@ -58,7 +59,7 @@ public class BookDetailFragmentPar extends Fragment {
                              Bundle savedInstanceState) {
 
 
-        BookItem item = (BookItem)getArguments().getSerializable(ARG_ITEM_ID);
+        Book item = (Book)getArguments().getSerializable(ARG_ITEM_ID);
         View vPar=inflater.inflate(R.layout.fragment_detail_par, container, false);
         setContentPar(item,vPar);
         return vPar;
@@ -68,24 +69,24 @@ public class BookDetailFragmentPar extends Fragment {
 
 
 
-    private void setContentPar(BookItem item,View activity)
+    private void setContentPar(Book item,View activity)
     {
         try {
             //se setea texto
             DateFormat formater = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-            String dateFormated=formater.format(item.dataPublicacio);
+            String dateFormated=formater.format(item.publication_date);
 
             TextView tViewDate = (TextView) activity.findViewById(R.id.textView_detail_par_date2);
             tViewDate.setText(dateFormated);
 
             TextView tViewNameAutor = (TextView) activity.findViewById(R.id.textView_detail_par_nameAutor2);
-            tViewNameAutor.setText(item.autor);
+            tViewNameAutor.setText(item.author);
 
             TextView tViewNameDesc = (TextView) activity.findViewById(R.id.textView_detail_par_nameDescription2);
-            tViewNameDesc.setText(item.descripcio+item.descripcio+item.descripcio+item.descripcio+item.descripcio);
+            tViewNameDesc.setText(item.description+item.description+item.description+item.description+item.description);
 
             //se cargan las imagenes de forma dinámica desde los datos en el xml
-            int idImage = getResources().getIdentifier(getContext().getPackageName() + ":drawable/" + item.urlImagen, null, null);
+            int idImage = getResources().getIdentifier(getContext().getPackageName() + ":drawable/" + item.url_imagen, null, null);
             ImageView image = activity.findViewById(R.id.imageView);
             image.setImageResource(idImage);
 
