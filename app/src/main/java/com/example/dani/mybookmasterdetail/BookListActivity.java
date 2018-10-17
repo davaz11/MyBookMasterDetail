@@ -1,5 +1,6 @@
 package com.example.dani.mybookmasterdetail;
 import com.example.dani.mybookmasterdetail.helperClasses.DeviceType;
+import com.example.dani.mybookmasterdetail.helperClasses.NetworkReceiver;
 import com.example.dani.mybookmasterdetail.logger.Log;
 import com.example.dani.mybookmasterdetail.model.BookItem;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
@@ -13,12 +14,19 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
@@ -30,6 +38,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -40,6 +50,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import com.example.dani.mybookmasterdetail.helperClasses.InternetCheck;
 
 import org.xmlpull.v1.XmlPullParserException;
 import io.realm.Realm;
@@ -65,34 +76,207 @@ public class BookListActivity extends AppCompatActivity {
     private boolean mTwoPane;
     public static final String TAG = "MainActivity";
     public List<BookItem> bookItemList;
-    public List<Book> bookListApp;
+    public List<Book> bookListApp=null;
 
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
     private FirebaseAuth.AuthStateListener mAuthListener;
     Realm realm;
+    private boolean isLogin=false;
+
+
+
+    //region NETWORK_PROPERTIES
+    public static final String WIFI = "Wi-Fi";
+    public static final String ANY = "Any";
+
+    private static boolean wifiConnected = false;
+    private static boolean mobileConnected = false;
+    public static boolean refreshDisplay = true;
+
+    public static String sPref = null;
+
+    private NetworkReceiver receiver = new NetworkReceiver();
+    //endregion
+
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
     try {
         super.onCreate(savedInstanceState);
-      // SugarContext.init(getApplicationContext());
 
-      Context c=getApplicationContext();
+        //TO LOAD REALM DATA
+        Realm.init(getApplicationContext());
+        realm = Realm.getDefaultInstance();
 
-      //TO LOAD REALM DATA
-       Realm.init(c);
-       realm = Realm.getDefaultInstance();
+        //conexion con base de datos de firebase
+        mAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
 
+
+        // Registers BroadcastReceiver to track network connection changes.
+        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        receiver = new NetworkReceiver();
+        this.registerReceiver(receiver, filter);
+
+
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        sPref = sharedPrefs.getString("listPref", "Wi-Fi");
+
+        updateConnectedFlags();
+        LoadLayout();
+
+        if(refreshDisplay){
+
+
+            SignInAndLoadData("danivaz25@gmail.com","firebaseTest");
+
+        }else{
+
+            LoadDataNotInternet();
+        }
+
+
+ //region TRASH
+/*
+//DETECTAR CONEXIÓN A INTERNET
+       InternetCheck.Consumer con=new InternetCheck.Consumer() {
+            @Override
+            public void accept(Boolean internet) {
+
+
+
+                if(internet)
+                {
+
+
+                    //mAuth.addAuthStateListener(mAuthListener);
+
+                    BookListActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+
+
+                            //LOAD FIREBASE DATA
+
+                           // ReadDatabaseFire();
+
+
+                           // SignInAndLoadData("danivaz25@gmail.com","firebaseTest");
+
+
+                        }
+                    });
+
+
+                }else
+                {
+
+
+                    BookListActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+
+                            LoadDataNotInternet();
+
+                        }
+                    });
+
+
+                }
+            }
+        };
+        InternetCheck ch=new InternetCheck(con);
+
+
+      /*  LoadCreateActivity();
 
         //LOAD FIREBASE DATA
-        FirebaseDataBaseConnection();
+       FirebaseDataBaseConnection();
         SignInWithEmailAndPassword("danivaz25@gmail.com","firebaseTest");
+
+*/
+
+
+
+
+
+
+
 
 
         //TO LOAD XML DATA
        //bookItemList=parseXMLbooks();
+
+
+
+
+
+
+
+/*
+        //LOAD NOT INTERNET
+        if(! isOnline()){
+            LoadDataNotInternet();
+        }else{
+            //LOAD FIREBASE DATA
+            FirebaseDataBaseConnection();
+            SignInWithEmailAndPassword("danivaz25@gmail.com","firebaseTest");
+        }
+*/
+//endregion
+
+    }catch (Exception e)
+    {
+        String u=e.getMessage();
+    }
+    }
+
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        if(mAuthListener!=null &mAuth!=null) {
+            mAuth.addAuthStateListener(mAuthListener);
+
+        }
+    }
+
+
+
+    //region NETWORKCONNECTION
+
+
+    // Checks the network connection and sets the wifiConnected and mobileConnected
+    // variables accordingly.
+    public void updateConnectedFlags() {
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeInfo = connMgr.getActiveNetworkInfo();
+        if (activeInfo != null && activeInfo.isConnected())
+        {
+
+            wifiConnected = activeInfo.getType() == ConnectivityManager.TYPE_WIFI;
+            mobileConnected = activeInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+        } else {
+            wifiConnected = false;
+            mobileConnected = false;
+        }
+    }
+
+
+    //endregion
+
+
+    //region LAYOUT
+    private void  LoadLayout(){
 
         setContentView(R.layout.activity_item_list);
 
@@ -114,9 +298,6 @@ public class BookListActivity extends AppCompatActivity {
         }
 
 
-
-
-
         //código para saber si se está ejecutando desde una tablet o desde un móvi
         // Para saber si es tablet
         isTablet= DeviceType.isTablet(getApplicationContext());
@@ -124,197 +305,26 @@ public class BookListActivity extends AppCompatActivity {
         isPhone=DeviceType.isPhone(getApplicationContext());
 
 
-    }catch (Exception e)
-    {
-        String u=e.getMessage();
-    }
     }
 
 
-private void LoadRecliclerView(){
+    private void LoadRecliclerView(){
 
-    View recyclerView = findViewById(R.id.item_list);
-    assert recyclerView != null;
-    setupRecyclerView((RecyclerView) recyclerView);
+        try {
+            View recyclerView = findViewById(R.id.item_list);
+            assert recyclerView != null;
+            setupRecyclerView((RecyclerView) recyclerView);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-}
+    }
 
 
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, bookListApp, mTwoPane));
     }
-
-
-    //Los libros se almacenan en un xml, se utiliza un parser para leerlo
-    private  List<BookItem> parseXMLbooks()
-    {
-
-        try {
-            Context context = getApplicationContext();
-            InputStream s = context.getResources().openRawResource(R.raw.book_items_model);
-
-            ParserXML parser=new ParserXML();
-            List<BookItem> bookList=parser.parsear(s);
-            return bookList;
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-            return null;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-
-
-
-
-    }
-
-//region FIREBUG_CONNECTION
-    private void FirebaseDataBaseConnection()
-    {
-        //conexion con base de datos de firebase
-        mAuth = FirebaseAuth.getInstance();
-        database = FirebaseDatabase.getInstance();
-
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    GetCurrentUser();
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                } else {
-                    // User is signed out
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
-                }
-                // ...
-            }
-        };
-    }
-
-
-        //https://firebase.google.com/docs/auth/android/start/
-        private void SignInWithEmailAndPassword(String email, String password)
-        {
-            mAuth.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
-                            if (!task.isSuccessful()) {
-                                Log.w(TAG, "signInWithEmail:failed", task.getException());
-
-                            }
-
-                            GetCurrentUser();
-                            ReadDatabaseFire();
-
-                        }
-                    });
-        }
-
-        private void GetCurrentUser()
-        {
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            if (user != null) {
-
-                String name = user.getDisplayName();
-                String email = user.getEmail();
-                String uid = user.getUid();
-                String uid2 = user.getUid();
-            }
-        }
-
-
-        private void ReadDatabaseFire()
-        {
-            database.getReference().addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-
-                    try {
-                       // dataFromFireBase = (Map<String, Object>) dataSnapshot.getValue();
-
-                        Log.d(TAG, "Data from FireBase changed");
-
-                       // List<Book> bookList=DataSnapshotToList(dataSnapshot);
-                        bookListApp=BookContent.ParseFireBaseDataToObject(dataSnapshot);
-
-                        LoadRecliclerView();
-
-                        BookContent.SetBooks(realm,bookListApp);
-
-                        Log.d(TAG, "Realm DataBase Updated"+BookContent.numberBooksUpdated);
-                        BookContent.numberBooksUpdated=0;
-
-
-                        //LOAD SQLITE
-
-                        BookSQLite.InsertSQLite(getApplicationContext());
-
-
-                    } catch (Exception e) {
-                        Log.w(TAG, "Error - Data from FireBase changed");
-                        e.printStackTrace();
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError error) {
-
-
-                    bookListApp= BookContent.GetBooks(realm);
-                    LoadRecliclerView();
-
-                    Log.w(TAG, "Failed to read value.", error.toException());
-                }
-            });
-        }
-
-
-
-
-
-
-
-
-      private List<Book> DataSnapshotToList(DataSnapshot dataSnapshot)
-      {
-
-          try {
-
-
-              GenericTypeIndicator<List<Book>> t = new GenericTypeIndicator<List<Book>>() {};
-              Object o=dataSnapshot.getValue(t);
-              List<Book> booksList = dataSnapshot.getValue(t);
-              return booksList;
-
-
-              /*Gson gson = new Gson();
-              JsonElement s3 = gson.toJsonTree(dataSnapshot.getValue());
-              Object obj=dataSnapshot.getValue();
-              String s1 = gson.toJson(dataSnapshot.getValue());
-
-              s3.isJsonArray();
-              boolean v=s3.isJsonObject();
-
-              JsonArray ar=s3.getAsJsonArray();
-
-              JSONArray jsonArray = new JSONArray();
-              realm.beginTransaction();
-              realm.createOrUpdateAllFromJson(Book.class,jsonArray);
-              realm.commitTransaction();*/
-          } catch (Exception e) {
-              e.printStackTrace();
-              return null;
-          }
-      }
-
-
-//endregion
-
 
 
 
@@ -382,31 +392,31 @@ private void LoadRecliclerView(){
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
 
-        try{
+            try{
 
 
-            holder.mIdView.setText(Integer.toString(mValues.get(position).identificador));
-            holder.mContentView.setText(mValues.get(position).title);
+                holder.mIdView.setText(Integer.toString(mValues.get(position).identificador));
+                holder.mContentView.setText(mValues.get(position).title);
 
-            //se pintan la card de diferente color segun sea par o impar
+                //se pintan la card de diferente color segun sea par o impar
 
-            if(mValues.get(position).identificador %2==0){
+                if(mValues.get(position).identificador %2==0){
 
-                holder.cardView.setCardBackgroundColor(holder.vi.getResources().getColor(R.color.backGroundCardPar));
+                    holder.cardView.setCardBackgroundColor(holder.vi.getResources().getColor(R.color.backGroundCardPar));
 
-            }else{
+                }else{
 
-                holder.cardView.setCardBackgroundColor(holder.vi.getResources().getColor(R.color.backGroundCard));
+                    holder.cardView.setCardBackgroundColor(holder.vi.getResources().getColor(R.color.backGroundCard));
+                }
+
+                holder.itemView.setTag(mValues.get(position));
+                holder.itemView.setOnClickListener(mOnClickListener);
+
+
+            }catch (Exception e)
+            {
+                String u=e.getMessage();
             }
-
-            holder.itemView.setTag(mValues.get(position));
-            holder.itemView.setOnClickListener(mOnClickListener);
-
-
-        }catch (Exception e)
-        {
-            String u=e.getMessage();
-        }
         }
 
         @Override
@@ -446,16 +456,220 @@ private void LoadRecliclerView(){
 
 
 
-   @Override
-    public void onStart() {
-        super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
+    //endregion
+
+
+    //region LOAD_DATA_FROM_XML
+    //Los libros se almacenan en un xml, se utiliza un parser para leerlo
+    private  List<BookItem> parseXMLbooks()
+    {
+
+        try {
+            Context context = getApplicationContext();
+            InputStream s = context.getResources().openRawResource(R.raw.book_items_model);
+
+            ParserXML parser=new ParserXML();
+            List<BookItem> bookList=parser.parsear(s);
+            return bookList;
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+
+
+
+
+    }
+
+    //endregion
+
+    //region LOAD_DATA_FROM_FIREBASE
+    private void FirebaseDataBaseConnection()
+    {
+        try {
+
+
+            mAuthListener = new FirebaseAuth.AuthStateListener() {
+                @Override
+                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                    FirebaseUser user = firebaseAuth.getCurrentUser();
+                    if (user != null) {
+                        GetCurrentUser();
+                        Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+
+
+                        GetCurrentUser();
+                        ReadDatabaseFire();
+
+                    } else {
+                        // User is signed out
+                        Log.d(TAG, "onAuthStateChanged:signed_out");
+
+                        LoadDataNotInternet();
+                    }
+                    // ...
+                }
+            };
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
+        //https://firebase.google.com/docs/auth/android/start/
+        private void SignInAndLoadData(String email, String password)
+        {
+            try {
+                mAuth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "signInWithEmail:TRUE", null);
+
+                                    GetCurrentUser();
+                                    ReadDatabaseFire();
 
 
-    /*
+
+                                }else {
+                                    Log.w(TAG, "signInWithEmail:FALSE", task.getException());
+
+                                    LoadDataNotInternet();
+
+                                }
+
+
+
+                            }
+
+
+                        });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+
+        private void GetCurrentUser()
+        {
+            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null) {
+
+                String name = user.getDisplayName();
+                String email = user.getEmail();
+                String uid = user.getUid();
+                String uid2 = user.getUid();
+            }
+        }
+
+
+
+        private void ReadDatabaseFire()
+        {
+
+           database.getReference().addValueEventListener(new ValueEventListener() {
+
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    try {
+                       // dataFromFireBase = (Map<String, Object>) dataSnapshot.getValue();
+
+                        Log.d(TAG, "Data from FireBase changed");
+
+
+                        bookListApp=BookContent.ParseFireBaseDataToObject(dataSnapshot);
+
+                        LoadRecliclerView();
+
+                        //LOAD DATA TO REALM
+                        BookContent.SetBooks(realm,bookListApp);
+
+                        Log.d(TAG, "Realm DataBase Updated"+BookContent.numberBooksUpdated);
+                        BookContent.numberBooksUpdated=0;
+
+
+                        //LOAD DATA TO SQLITE
+                        BookSQLite.InsertBookList(getApplicationContext(),bookListApp);
+                        Log.d(TAG, "SQLITE DataBase Updated");
+
+
+
+
+                    } catch (Exception e) {
+                        Log.w(TAG, "Error - Data from FireBase changed");
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError error) {
+
+                    LoadDataNotInternet();
+
+                }
+            });
+        }
+
+
+      private List<Book> DataSnapshotToList(DataSnapshot dataSnapshot)
+      {
+
+          try {
+
+
+              GenericTypeIndicator<List<Book>> t = new GenericTypeIndicator<List<Book>>() {};
+              Object o=dataSnapshot.getValue(t);
+              List<Book> booksList = dataSnapshot.getValue(t);
+              return booksList;
+
+
+              /*Gson gson = new Gson();
+              JsonElement s3 = gson.toJsonTree(dataSnapshot.getValue());
+              Object obj=dataSnapshot.getValue();
+              String s1 = gson.toJson(dataSnapshot.getValue());
+
+              s3.isJsonArray();
+              boolean v=s3.isJsonObject();
+
+              JsonArray ar=s3.getAsJsonArray();
+
+              JSONArray jsonArray = new JSONArray();
+              realm.beginTransaction();
+              realm.createOrUpdateAllFromJson(Book.class,jsonArray);
+              realm.commitTransaction();*/
+          } catch (Exception e) {
+              e.printStackTrace();
+              return null;
+          }
+      }
+
+
+//endregion
+
+    //region LOAD_DATA_DATABASE
+    private void LoadDataNotInternet()
+    {
+        try {
+            bookListApp= BookContent.GetBooks(realm);
+            LoadRecliclerView();
+
+            List<Book> bListSqlite=BookSQLite.GetBookList(getApplicationContext(),null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //endregion
+
     @Override
     public void onStop() {
         super.onStop();
@@ -467,7 +681,11 @@ private void LoadRecliclerView(){
     @Override
     public void onDestroy() {
         super.onDestroy();
-        SugarContext.terminate();
+        // Unregisters BroadcastReceiver when app is destroyed.
+        if (receiver != null) {
+            this.unregisterReceiver(receiver);
+        }
+
     }
-*/
+
 }

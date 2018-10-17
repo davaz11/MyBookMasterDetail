@@ -2,12 +2,13 @@ package com.example.dani.mybookmasterdetail.modelSQLite;
 
 
 import android.content.Context;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class BookDbHelper extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "BookReaderSQLite.db";
 
     public BookDbHelper(Context context) {
@@ -15,7 +16,12 @@ public class BookDbHelper extends SQLiteOpenHelper {
 
     }
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(BookReaderContract.SQL_CREATE_ENTRIES);
+        try {
+            db.execSQL(BookReaderContract.SQL_CREATE_ENTRIES);
+          String t="";
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

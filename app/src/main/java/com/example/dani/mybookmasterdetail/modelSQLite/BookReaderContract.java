@@ -19,7 +19,7 @@ public final class BookReaderContract {
                     BookEntry.COLUMN_NAME_AUTHOR + " TEXT," +
                     BookEntry.COLUMN_NAME_DESCRIPTION + " TEXT," +
                     BookEntry.COLUMN_NAME_URL_IMAGEN + " TEXT," +
-                    BookEntry.COLUMN_NAME_PUBLICATION_DATE + " DATETIME)";
+                    BookEntry.COLUMN_NAME_PUBLICATION_DATE + " LONG)";
 
     public static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + BookEntry.TABLE_NAME;
@@ -31,12 +31,7 @@ public final class BookReaderContract {
 
 
 
-    /* Inner class that defines the table contents */
-    public static class BookEntry2 implements BaseColumns {
-        public static final String TABLE_NAME = "book";
-        public static final String COLUMN_NAME_TITLE = "book";
-        public static final String COLUMN_NAME_SUBTITLE = "book";
-    }
+
 
 
     /* Inner class that defines the table contents */
@@ -47,6 +42,7 @@ public final class BookReaderContract {
         public static final String COLUMN_NAME_DESCRIPTION= "description";
         public static final String COLUMN_NAME_URL_IMAGEN= "url_imagen";
         public static final String COLUMN_NAME_PUBLICATION_DATE= "publication_date";
+        public static final String COLUMN_NAME_ID="id";
 
     }
 
