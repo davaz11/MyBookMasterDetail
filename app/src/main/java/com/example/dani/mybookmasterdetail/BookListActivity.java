@@ -3,6 +3,7 @@ import com.example.dani.mybookmasterdetail.helperClasses.DeviceType;
 import com.example.dani.mybookmasterdetail.helperClasses.NetworkReceiver;
 import com.example.dani.mybookmasterdetail.logger.Log;
 import com.example.dani.mybookmasterdetail.model.BookItem;
+import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBase;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 import com.example.dani.mybookmasterdetail.modelRealmORM.BookContent;
 import com.example.dani.mybookmasterdetail.modelSQLite.BookSQLite;
@@ -28,6 +29,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -37,8 +39,10 @@ import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
-
+import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBaseListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,7 +68,7 @@ import io.realm.Realm;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class BookListActivity extends AppCompatActivity {
+public class BookListActivity extends AppCompatActivity implements DataSourceFireBaseListener {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -75,15 +79,16 @@ public class BookListActivity extends AppCompatActivity {
 
     private boolean mTwoPane;
     public static final String TAG = "MainActivity";
-    public List<BookItem> bookItemList;
     public List<Book> bookListApp=null;
 
     private FirebaseAuth mAuth;
     private FirebaseDatabase database;
     private FirebaseAuth.AuthStateListener mAuthListener;
     Realm realm;
-    private boolean isLogin=false;
 
+    private DataSourceFireBase dataSourceFireBase;
+
+    SwipeRefreshLayout swipeContainer;
 
 
     //region NETWORK_PROPERTIES
@@ -107,6 +112,7 @@ public class BookListActivity extends AppCompatActivity {
     try {
         super.onCreate(savedInstanceState);
 
+
         //TO LOAD REALM DATA
         Realm.init(getApplicationContext());
         realm = Realm.getDefaultInstance();
@@ -125,13 +131,22 @@ public class BookListActivity extends AppCompatActivity {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         sPref = sharedPrefs.getString("listPref", "Wi-Fi");
 
-        updateConnectedFlags();
         LoadLayout();
+        updateConnectedFlags();
 
+
+        //conexion con base de datos de firebase
+        dataSourceFireBase=new DataSourceFireBase();
+        dataSourceFireBase.setActivity(this);
+        dataSourceFireBase.addListener(this);
+
+
+        //carga bien con wifi o con 3g
+        //hace el comportamiento deseado cuando se activa y desactiva internet
         if(refreshDisplay){
 
 
-            SignInAndLoadData("danivaz25@gmail.com","firebaseTest");
+            dataSourceFireBase.SignInAndLoadData("danivaz25@gmail.com","firebaseTest");
 
         }else{
 
@@ -232,10 +247,40 @@ public class BookListActivity extends AppCompatActivity {
 
     }catch (Exception e)
     {
-        String u=e.getMessage();
+        Log.w(TAG, e.getMessage());
     }
     }
 
+
+    @Override
+    public void onLoadDataFromFireBase(Object returnValue)
+    {
+        try {
+            if(returnValue!=null)
+            {
+                bookListApp=(List<Book>)returnValue;
+
+                LoadRecliclerView();
+
+                //LOAD DATA TO REALM
+                BookContent.SetBooks(realm,bookListApp);
+                Log.d(TAG, "Realm DataBase Updated"+BookContent.numberBooksUpdated);
+                BookContent.numberBooksUpdated=0;
+
+
+                //LOAD DATA TO SQLITE
+                BookSQLite.InsertBookList(getApplicationContext(),bookListApp);
+                Log.d(TAG, "SQLITE DataBase Updated");
+
+                swipeContainer.setRefreshing(false);
+
+            }else{
+                LoadDataNotInternet();
+            }
+        } catch (Exception e) {
+            Log.w(TAG, e.getMessage());
+        }
+    }
 
 
     @Override
@@ -265,9 +310,11 @@ public class BookListActivity extends AppCompatActivity {
 
             wifiConnected = activeInfo.getType() == ConnectivityManager.TYPE_WIFI;
             mobileConnected = activeInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+            refreshDisplay=true;
         } else {
             wifiConnected = false;
             mobileConnected = false;
+            refreshDisplay=false;
         }
     }
 
@@ -305,6 +352,9 @@ public class BookListActivity extends AppCompatActivity {
         isPhone=DeviceType.isPhone(getApplicationContext());
 
 
+
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        RefreshWithSwipe();
     }
 
 
@@ -322,8 +372,12 @@ public class BookListActivity extends AppCompatActivity {
 
 
 
+
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, bookListApp, mTwoPane));
+
+
+
     }
 
 
@@ -381,12 +435,16 @@ public class BookListActivity extends AppCompatActivity {
 
                 return new ViewHolder(view);
 
-            }catch (Exception e)
-            {
-                String u=e.getMessage();
+            }catch (Exception e) {
+                String u = e.getMessage();
                 return null;
+
             }
         }
+
+
+
+
 
 
         @Override
@@ -413,11 +471,31 @@ public class BookListActivity extends AppCompatActivity {
                 holder.itemView.setOnClickListener(mOnClickListener);
 
 
+                setAnimation(holder.itemView, position);
+
             }catch (Exception e)
             {
                 String u=e.getMessage();
             }
         }
+
+        private int lastPosition = -1;
+        /**
+         * Here is the key method to apply the animation
+         */
+        private void setAnimation(View viewToAnimate, int position)
+        {
+            // If the bound view wasn't previously displayed on screen, it's animated
+            if (position > lastPosition)
+            {
+                Animation animation = AnimationUtils.loadAnimation(viewToAnimate.getContext(), android.R.anim.slide_in_left);
+                viewToAnimate.startAnimation(animation);
+                lastPosition = position;
+            }
+        }
+
+
+
 
         @Override
         public int getItemCount() {
@@ -440,6 +518,7 @@ public class BookListActivity extends AppCompatActivity {
                 mContentView = (TextView) view.findViewById(R.id.content);
                 cardView=(CardView) view.findViewById(R.id.card_view);
                 vi=view;
+
             }
 
 
@@ -452,7 +531,30 @@ public class BookListActivity extends AppCompatActivity {
     }
 
 
+    private void RefreshWithSwipe()
+    {
 
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+
+                updateConnectedFlags();
+
+                if(refreshDisplay){
+
+
+                    dataSourceFireBase.SignInAndLoadData("danivaz25@gmail.com","firebaseTest");
+
+
+                }else{
+
+                    LoadDataNotInternet();
+                }
+
+            }
+        });
+
+    }
 
 
 
@@ -549,13 +651,32 @@ public class BookListActivity extends AppCompatActivity {
                             }
 
 
-                        });
+                        }).getException();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
+    //https://firebase.google.com/docs/auth/android/start/
+    private void SignInAndLoadData2(String email, String password)
+    {
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
 
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+
+
+                        if (!task.isSuccessful()) {
+                            //H.toast(c, task.getException().getMessage());
+                            Log.e("Signup Error", "onCancelled", task.getException());
+                        } else {
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            String uid = user.getUid();
+                        }
+                    }
+                });
+    }
 
         private void GetCurrentUser()
         {
@@ -606,6 +727,8 @@ public class BookListActivity extends AppCompatActivity {
                     } catch (Exception e) {
                         Log.w(TAG, "Error - Data from FireBase changed");
                         e.printStackTrace();
+                    }finally {
+                        swipeContainer.setRefreshing(false);
                     }
                 }
 
@@ -662,8 +785,14 @@ public class BookListActivity extends AppCompatActivity {
             LoadRecliclerView();
 
             List<Book> bListSqlite=BookSQLite.GetBookList(getApplicationContext(),null);
+
+
+
         } catch (Exception e) {
             e.printStackTrace();
+        }finally{
+            swipeContainer.setRefreshing(false);
+
         }
 
     }

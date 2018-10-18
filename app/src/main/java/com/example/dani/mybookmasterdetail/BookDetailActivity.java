@@ -35,7 +35,7 @@ public class BookDetailActivity extends AppCompatActivity {
 
             Book item =(Book)getIntent().getSerializableExtra(BookDetailFragmentImpar.ARG_ITEM_ID);
 
-            setContentView(R.layout.activity_item_detail);
+                setContentView(R.layout.activity_item_detail);
 
 
 
