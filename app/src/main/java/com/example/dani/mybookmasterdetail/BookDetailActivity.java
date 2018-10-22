@@ -33,7 +33,7 @@ public class BookDetailActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
 
 
-            Book item =(Book)getIntent().getSerializableExtra(BookDetailFragmentImpar.ARG_ITEM_ID);
+            Book item =(Book)getIntent().getSerializableExtra(BookDetailFragmentPar.ARG_ITEM_ID);
 
                 setContentView(R.layout.activity_item_detail);
 
@@ -60,22 +60,10 @@ public class BookDetailActivity extends AppCompatActivity {
             if (savedInstanceState == null) {
 
 
-
-                Fragment fragment=null;
-
-                //se elige un layout y el fragment
-                if(item.identificador%2==0)
-                {
-                    fragment = new BookDetailFragmentPar();
-
-                }else{
-                    fragment = new BookDetailFragmentImpar();
-
-                }
-
+                Fragment fragment=new BookDetailFragmentPar();
 
                 Bundle arguments = new Bundle();
-                arguments.putSerializable(BookDetailFragmentImpar.ARG_ITEM_ID, item);
+                arguments.putSerializable(BookDetailFragmentPar.ARG_ITEM_ID, item);
                // BookDetailFragmentImpar fragment = new BookDetailFragmentImpar();
                 fragment.setArguments(arguments);
                 getSupportFragmentManager().beginTransaction()

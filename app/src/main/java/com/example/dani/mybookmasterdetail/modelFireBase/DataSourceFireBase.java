@@ -92,7 +92,7 @@ public class DataSourceFireBase{
     }
 
 
-    //https://firebase.google.com/docs/auth/android/start/
+    //Se autentica en firebase
     public void SignInAndLoadData(String email, String password)
     {
         try {
@@ -109,7 +109,7 @@ public class DataSourceFireBase{
                             if (task.isSuccessful()) {
                                 Log.d(TAG, "signInWithEmail:TRUE", null);
 
-
+                                //si la autenticación es correcta se cargan datos
                                 ReadDatabaseFire();
 
 
@@ -149,8 +149,7 @@ public class DataSourceFireBase{
         }
     }
 
-
-
+    //se cargan datos de firebase
     protected  void ReadDatabaseFire()
     {
 
@@ -163,6 +162,9 @@ public class DataSourceFireBase{
 
                     Log.d(TAG, "Data from FireBase changed");
 
+                    //se pasan los datos de firebase a una List de Books,
+                    // no me han servido los  métodos genéricos que se proponen en la práctica así que he tenido que crear objeto nuevo y pasar atributo por atributo
+                    // me prodrías mandar un ejemplo de como se hace la forma genérica?
                    List<Book> bookListApp= BookContent.ParseFireBaseDataToObject(dataSnapshot);
 
                     // Notify everybody that may be interested.

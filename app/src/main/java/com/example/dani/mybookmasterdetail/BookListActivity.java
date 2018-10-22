@@ -15,7 +15,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
@@ -24,7 +23,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -43,18 +41,9 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBaseListener;
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import com.example.dani.mybookmasterdetail.helperClasses.InternetCheck;
 
 import org.xmlpull.v1.XmlPullParserException;
 import io.realm.Realm;
@@ -112,12 +101,11 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
     try {
         super.onCreate(savedInstanceState);
 
-
-        //TO LOAD REALM DATA
+        //inicializando realm
         Realm.init(getApplicationContext());
         realm = Realm.getDefaultInstance();
 
-        //conexion con base de datos de firebase
+        //inicializando firebase
         mAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
 
@@ -141,109 +129,19 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
         dataSourceFireBase.addListener(this);
 
 
-        //carga bien con wifi o con 3g
-        //hace el comportamiento deseado cuando se activa y desactiva internet
+       //con conexión a internet
         if(refreshDisplay){
 
 
             dataSourceFireBase.SignInAndLoadData("danivaz25@gmail.com","firebaseTest");
 
         }else{
+            //sin conexión a internet
 
             LoadDataNotInternet();
         }
 
 
- //region TRASH
-/*
-//DETECTAR CONEXIÓN A INTERNET
-       InternetCheck.Consumer con=new InternetCheck.Consumer() {
-            @Override
-            public void accept(Boolean internet) {
-
-
-
-                if(internet)
-                {
-
-
-                    //mAuth.addAuthStateListener(mAuthListener);
-
-                    BookListActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-
-
-                            //LOAD FIREBASE DATA
-
-                           // ReadDatabaseFire();
-
-
-                           // SignInAndLoadData("danivaz25@gmail.com","firebaseTest");
-
-
-                        }
-                    });
-
-
-                }else
-                {
-
-
-                    BookListActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-
-
-                            LoadDataNotInternet();
-
-                        }
-                    });
-
-
-                }
-            }
-        };
-        InternetCheck ch=new InternetCheck(con);
-
-
-      /*  LoadCreateActivity();
-
-        //LOAD FIREBASE DATA
-       FirebaseDataBaseConnection();
-        SignInWithEmailAndPassword("danivaz25@gmail.com","firebaseTest");
-
-*/
-
-
-
-
-
-
-
-
-
-        //TO LOAD XML DATA
-       //bookItemList=parseXMLbooks();
-
-
-
-
-
-
-
-/*
-        //LOAD NOT INTERNET
-        if(! isOnline()){
-            LoadDataNotInternet();
-        }else{
-            //LOAD FIREBASE DATA
-            FirebaseDataBaseConnection();
-            SignInWithEmailAndPassword("danivaz25@gmail.com","firebaseTest");
-        }
-*/
-//endregion
 
     }catch (Exception e)
     {
@@ -252,6 +150,8 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
     }
 
 
+    //evento retorno que se dispara cuando firebase devuelve datos
+    //todos los me´todos de firebase estan en DataSourceFireBase
     @Override
     public void onLoadDataFromFireBase(Object returnValue)
     {
@@ -262,6 +162,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
                 LoadRecliclerView();
 
+                //utilizo dos formas de guardar datos en local, realm y sqlite
                 //LOAD DATA TO REALM
                 BookContent.SetBooks(realm,bookListApp);
                 Log.d(TAG, "Realm DataBase Updated"+BookContent.numberBooksUpdated);
@@ -396,8 +297,8 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
                     Book item = (Book) view.getTag();
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
-                        arguments.putSerializable(BookDetailFragmentImpar.ARG_ITEM_ID, item);
-                        BookDetailFragmentImpar fragment = new BookDetailFragmentImpar();
+                        arguments.putSerializable(BookDetailFragmentPar.ARG_ITEM_ID, item);
+                        BookDetailFragmentPar fragment = new BookDetailFragmentPar();
                         fragment.setArguments(arguments);
                         mParentActivity.getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.item_detail_container, fragment)
@@ -406,7 +307,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
                         //Se envia el item seleccionado en el intent para utilizarlo en la siguiente pantalla
                         Context context = view.getContext();
                         Intent intent = new Intent(context, BookDetailActivity.class);
-                        intent.putExtra(BookDetailFragmentImpar.ARG_ITEM_ID, item);
+                        intent.putExtra(BookDetailFragmentPar.ARG_ITEM_ID, item);
                         context.startActivity(intent);
                     }
                 } catch (Exception e) {
@@ -425,18 +326,28 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
         }
 
+
+        int positionCard=1;
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
             try {
 
-                View view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.item_list_content, parent, false);
+                View view;
+                if(positionCard%2==0) {
+                    view = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.item_list_content_impar, parent, false);
 
+                }else{
+                    view = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.item_list_content_par, parent, false);
+                }
+
+                positionCard++;
                 return new ViewHolder(view);
 
             }catch (Exception e) {
-                String u = e.getMessage();
+                Log.w(TAG,e.getMessage());
                 return null;
 
             }
@@ -458,7 +369,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
                 //se pintan la card de diferente color segun sea par o impar
 
-                if(mValues.get(position).identificador %2==0){
+              /* if(mValues.get(position).identificador %2==0){
 
                     holder.cardView.setCardBackgroundColor(holder.vi.getResources().getColor(R.color.backGroundCardPar));
 
@@ -466,6 +377,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
                     holder.cardView.setCardBackgroundColor(holder.vi.getResources().getColor(R.color.backGroundCard));
                 }
+                */
 
                 holder.itemView.setTag(mValues.get(position));
                 holder.itemView.setOnClickListener(mOnClickListener);
@@ -589,193 +501,6 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
     //endregion
 
-    //region LOAD_DATA_FROM_FIREBASE
-    private void FirebaseDataBaseConnection()
-    {
-        try {
-
-
-            mAuthListener = new FirebaseAuth.AuthStateListener() {
-                @Override
-                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                    FirebaseUser user = firebaseAuth.getCurrentUser();
-                    if (user != null) {
-                        GetCurrentUser();
-                        Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-
-
-                        GetCurrentUser();
-                        ReadDatabaseFire();
-
-                    } else {
-                        // User is signed out
-                        Log.d(TAG, "onAuthStateChanged:signed_out");
-
-                        LoadDataNotInternet();
-                    }
-                    // ...
-                }
-            };
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-        //https://firebase.google.com/docs/auth/android/start/
-        private void SignInAndLoadData(String email, String password)
-        {
-            try {
-                mAuth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
-                                if (task.isSuccessful()) {
-                                    Log.d(TAG, "signInWithEmail:TRUE", null);
-
-                                    GetCurrentUser();
-                                    ReadDatabaseFire();
-
-
-
-                                }else {
-                                    Log.w(TAG, "signInWithEmail:FALSE", task.getException());
-
-                                    LoadDataNotInternet();
-
-                                }
-
-
-
-                            }
-
-
-                        }).getException();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-    //https://firebase.google.com/docs/auth/android/start/
-    private void SignInAndLoadData2(String email, String password)
-    {
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-
-
-                        if (!task.isSuccessful()) {
-                            //H.toast(c, task.getException().getMessage());
-                            Log.e("Signup Error", "onCancelled", task.getException());
-                        } else {
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            String uid = user.getUid();
-                        }
-                    }
-                });
-    }
-
-        private void GetCurrentUser()
-        {
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            if (user != null) {
-
-                String name = user.getDisplayName();
-                String email = user.getEmail();
-                String uid = user.getUid();
-                String uid2 = user.getUid();
-            }
-        }
-
-
-
-        private void ReadDatabaseFire()
-        {
-
-           database.getReference().addValueEventListener(new ValueEventListener() {
-
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-
-                    try {
-                       // dataFromFireBase = (Map<String, Object>) dataSnapshot.getValue();
-
-                        Log.d(TAG, "Data from FireBase changed");
-
-
-                        bookListApp=BookContent.ParseFireBaseDataToObject(dataSnapshot);
-
-                        LoadRecliclerView();
-
-                        //LOAD DATA TO REALM
-                        BookContent.SetBooks(realm,bookListApp);
-
-                        Log.d(TAG, "Realm DataBase Updated"+BookContent.numberBooksUpdated);
-                        BookContent.numberBooksUpdated=0;
-
-
-                        //LOAD DATA TO SQLITE
-                        BookSQLite.InsertBookList(getApplicationContext(),bookListApp);
-                        Log.d(TAG, "SQLITE DataBase Updated");
-
-
-
-
-                    } catch (Exception e) {
-                        Log.w(TAG, "Error - Data from FireBase changed");
-                        e.printStackTrace();
-                    }finally {
-                        swipeContainer.setRefreshing(false);
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError error) {
-
-                    LoadDataNotInternet();
-
-                }
-            });
-        }
-
-
-      private List<Book> DataSnapshotToList(DataSnapshot dataSnapshot)
-      {
-
-          try {
-
-
-              GenericTypeIndicator<List<Book>> t = new GenericTypeIndicator<List<Book>>() {};
-              Object o=dataSnapshot.getValue(t);
-              List<Book> booksList = dataSnapshot.getValue(t);
-              return booksList;
-
-
-              /*Gson gson = new Gson();
-              JsonElement s3 = gson.toJsonTree(dataSnapshot.getValue());
-              Object obj=dataSnapshot.getValue();
-              String s1 = gson.toJson(dataSnapshot.getValue());
-
-              s3.isJsonArray();
-              boolean v=s3.isJsonObject();
-
-              JsonArray ar=s3.getAsJsonArray();
-
-              JSONArray jsonArray = new JSONArray();
-              realm.beginTransaction();
-              realm.createOrUpdateAllFromJson(Book.class,jsonArray);
-              realm.commitTransaction();*/
-          } catch (Exception e) {
-              e.printStackTrace();
-              return null;
-          }
-      }
-
-
-//endregion
 
     //region LOAD_DATA_DATABASE
     private void LoadDataNotInternet()

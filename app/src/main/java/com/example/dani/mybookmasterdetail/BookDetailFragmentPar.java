@@ -1,6 +1,7 @@
 package com.example.dani.mybookmasterdetail;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
@@ -10,9 +11,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.dani.mybookmasterdetail.helperClasses.DownloadImageTask;
 import com.example.dani.mybookmasterdetail.model.BookItem;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 
+import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -83,12 +86,16 @@ public class BookDetailFragmentPar extends Fragment {
             tViewNameAutor.setText(item.author);
 
             TextView tViewNameDesc = (TextView) activity.findViewById(R.id.textView_detail_par_nameDescription2);
-            tViewNameDesc.setText(item.description+item.description+item.description+item.description+item.description);
+            tViewNameDesc.setText(item.description);
 
             //se cargan las imagenes de forma dinámica desde los datos en el xml
-            int idImage = getResources().getIdentifier(getContext().getPackageName() + ":drawable/" + item.url_imagen, null, null);
+           // int idImage = getResources().getIdentifier(getContext().getPackageName() + ":drawable/" + item.url_imagen, null, null);
             ImageView image = activity.findViewById(R.id.imageView);
-            image.setImageResource(idImage);
+
+            new DownloadImageTask(image).execute(item.url_imagen);
+
+
+            //image.setImageResource(idImage);
 
         } catch (Exception e) {
             e.printStackTrace();
