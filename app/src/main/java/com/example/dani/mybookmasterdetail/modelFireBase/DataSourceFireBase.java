@@ -1,9 +1,12 @@
 package com.example.dani.mybookmasterdetail.modelFireBase;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import com.example.dani.mybookmasterdetail.logger.Log;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 import com.example.dani.mybookmasterdetail.modelRealmORM.BookContent;
+import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -15,12 +18,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
 public class DataSourceFireBase{
 
     public  final String TAG = "DataSourceFireBase";
+    public  final int RC_SIGN_IN = 123;
 
     protected  AppCompatActivity activity;
 
@@ -31,6 +36,7 @@ public class DataSourceFireBase{
     private   List<DataSourceFireBaseListener> listeners = new ArrayList<DataSourceFireBaseListener>();
 
 
+    private boolean isConnectedToFireBase=false;
 
 
     public DataSourceFireBase(){
@@ -55,7 +61,49 @@ public class DataSourceFireBase{
 
 
 
+    public void LogOutAuth(){
 
+        AuthUI.getInstance()
+                .signOut(activity)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                    }
+                });
+    }
+
+    public void GmailAuth(){
+
+        try {
+
+            //conexion con base de datos de firebase
+            mAuth = FirebaseAuth.getInstance();
+
+            //no hace falta volver a conectar si ya hay un usuario logeado
+            FirebaseUser user=mAuth.getCurrentUser();
+            if(user!=null){
+                ReadDatabaseFire();
+                return;
+            }
+
+
+
+            // Choose authentication providers
+            List<AuthUI.IdpConfig> providers = Arrays.asList(
+                    new AuthUI.IdpConfig.EmailBuilder().build(),
+                    new AuthUI.IdpConfig.GoogleBuilder().build());
+
+            // Create and launch sign-in intent
+            activity.startActivityForResult(
+                    AuthUI.getInstance()
+                            .createSignInIntentBuilder()
+                            .setAvailableProviders(providers)
+                            .build(),
+                    RC_SIGN_IN);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
 
@@ -99,7 +147,13 @@ public class DataSourceFireBase{
 
             //conexion con base de datos de firebase
             mAuth = FirebaseAuth.getInstance();
-            database = FirebaseDatabase.getInstance();
+
+            //no hace falta volver a conectar si ya hay un usuario logeado
+            FirebaseUser user=mAuth.getCurrentUser();
+            if(user!=null){
+                ReadDatabaseFire();
+                return;
+            }
 
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(activity, new OnCompleteListener<AuthResult>() {
@@ -111,7 +165,6 @@ public class DataSourceFireBase{
 
                                 //si la autenticación es correcta se cargan datos
                                 ReadDatabaseFire();
-
 
 
                             }else {
@@ -150,8 +203,10 @@ public class DataSourceFireBase{
     }
 
     //se cargan datos de firebase
-    protected  void ReadDatabaseFire()
+    public  void ReadDatabaseFire()
     {
+
+        database = FirebaseDatabase.getInstance();
 
         database.getReference().addValueEventListener(new ValueEventListener() {
 

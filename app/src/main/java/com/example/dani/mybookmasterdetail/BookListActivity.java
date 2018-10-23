@@ -8,6 +8,8 @@ import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 import com.example.dani.mybookmasterdetail.modelRealmORM.BookContent;
 import com.example.dani.mybookmasterdetail.modelSQLite.BookSQLite;
 import com.example.dani.mybookmasterdetail.parserXML.ParserXML;
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -43,6 +45,7 @@ import android.widget.TextView;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBaseListener;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 import org.xmlpull.v1.XmlPullParserException;
@@ -63,6 +66,10 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
      */
+
+    //change type of loging
+    private boolean useGmailLogin=true;
+
     public boolean isTablet;
     public boolean isPhone;
 
@@ -119,6 +126,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         sPref = sharedPrefs.getString("listPref", "Wi-Fi");
 
+
         LoadLayout();
         updateConnectedFlags();
 
@@ -129,11 +137,19 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
         dataSourceFireBase.addListener(this);
 
 
+
+
        //con conexión a internet
         if(refreshDisplay){
 
+          if(useGmailLogin) {
+              //Login with gmail
+              dataSourceFireBase.GmailAuth();
+          }else{
+              //Default loging
+              dataSourceFireBase.SignInAndLoadData("danivaz25@gmail.com","firebaseTest");
 
-            dataSourceFireBase.SignInAndLoadData("danivaz25@gmail.com","firebaseTest");
+          }
 
         }else{
             //sin conexión a internet
@@ -180,6 +196,28 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
             }
         } catch (Exception e) {
             Log.w(TAG, e.getMessage());
+        }
+    }
+
+
+
+    //cuando el usurio se logea con gmail recive este evento
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == dataSourceFireBase.RC_SIGN_IN) {
+            IdpResponse response = IdpResponse.fromResultIntent(data);
+
+            if (resultCode == RESULT_OK) {
+                // Successfully signed in
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                dataSourceFireBase.ReadDatabaseFire();
+
+
+            } else {
+
+            }
         }
     }
 
@@ -309,6 +347,8 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
                         Intent intent = new Intent(context, BookDetailActivity.class);
                         intent.putExtra(BookDetailFragmentPar.ARG_ITEM_ID, item);
                         context.startActivity(intent);
+
+
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -540,6 +580,10 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
             this.unregisterReceiver(receiver);
         }
 
+
+      //  dataSourceFireBase.LogOutAuth();
+
     }
+
 
 }

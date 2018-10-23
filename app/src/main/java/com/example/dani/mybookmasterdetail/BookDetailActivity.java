@@ -25,6 +25,7 @@ import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 public class BookDetailActivity extends AppCompatActivity {
 
 
+
    // View recyclerView = findViewById(R.id.item_list);
 
     @Override
@@ -80,7 +81,14 @@ public class BookDetailActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == android.R.id.home) {
 
-            NavUtils.navigateUpTo(this, new Intent(this, BookListActivity.class));
+            Intent intent=new Intent(this, BookListActivity.class);
+
+           NavUtils.navigateUpTo(this, intent);
+
+
+
+
+
             return true;
         }
         return super.onOptionsItemSelected(item);
