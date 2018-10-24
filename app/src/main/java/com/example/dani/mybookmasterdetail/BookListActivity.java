@@ -407,17 +407,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
                 holder.mIdView.setText(Integer.toString(mValues.get(position).identificador));
                 holder.mContentView.setText(mValues.get(position).title);
 
-                //se pintan la card de diferente color segun sea par o impar
 
-              /* if(mValues.get(position).identificador %2==0){
-
-                    holder.cardView.setCardBackgroundColor(holder.vi.getResources().getColor(R.color.backGroundCardPar));
-
-                }else{
-
-                    holder.cardView.setCardBackgroundColor(holder.vi.getResources().getColor(R.color.backGroundCard));
-                }
-                */
 
                 holder.itemView.setTag(mValues.get(position));
                 holder.itemView.setOnClickListener(mOnClickListener);
