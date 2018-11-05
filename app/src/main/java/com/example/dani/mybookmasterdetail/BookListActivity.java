@@ -1,31 +1,25 @@
 package com.example.dani.mybookmasterdetail;
 import com.example.dani.mybookmasterdetail.helperClasses.DeviceType;
 import com.example.dani.mybookmasterdetail.helperClasses.NetworkReceiver;
-import com.example.dani.mybookmasterdetail.logger.Log;
 import com.example.dani.mybookmasterdetail.model.BookItem;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBase;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 import com.example.dani.mybookmasterdetail.modelRealmORM.BookContent;
 import com.example.dani.mybookmasterdetail.modelSQLite.BookSQLite;
 import com.example.dani.mybookmasterdetail.parserXML.ParserXML;
-import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.GenericTypeIndicator;
-import com.google.firebase.database.ValueEventListener;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -36,6 +30,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +40,6 @@ import android.widget.TextView;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBaseListener;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
 
 import org.xmlpull.v1.XmlPullParserException;
@@ -67,8 +61,10 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
      * device.
      */
 
+    String CHANNEL_ID="123";
+
     //change type of loging
-    private boolean useGmailLogin=true;
+    private boolean useGmailLogin=false;
 
     public boolean isTablet;
     public boolean isPhone;
@@ -108,6 +104,8 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
     try {
         super.onCreate(savedInstanceState);
 
+        createNotificationChannel();
+
         //inicializando realm
         Realm.init(getApplicationContext());
         realm = Realm.getDefaultInstance();
@@ -141,6 +139,8 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
        //con conexión a internet
         if(refreshDisplay){
+//fE7xOTWA-OY
+          String t=dataSourceFireBase.GetFireBaseId();
 
           if(useGmailLogin) {
               //Login with gmail
@@ -233,6 +233,24 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
     }
 
 
+    private void createNotificationChannel() {
+        try {
+            // Create the NotificationChannel, but only on API 26+ because
+            // the NotificationChannel class is new and not in the support library
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                int importance = NotificationManager.IMPORTANCE_DEFAULT;
+                NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "hola", importance);
+                channel.setDescription("hola");
+                // Register the channel with the system; you can't change the importance
+                // or other notification behaviors after this
+                NotificationManager notificationManager = getSystemService(NotificationManager.class);
+                notificationManager.createNotificationChannel(channel);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     //region NETWORKCONNECTION
 

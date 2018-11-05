@@ -1,9 +1,9 @@
 package com.example.dani.mybookmasterdetail.modelFireBase;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import com.example.dani.mybookmasterdetail.logger.Log;
+import android.util.Log;
+
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 import com.example.dani.mybookmasterdetail.modelRealmORM.BookContent;
 import com.firebase.ui.auth.AuthUI;
@@ -16,6 +16,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,6 +61,11 @@ public class DataSourceFireBase{
     }
 
 
+
+    public String GetFireBaseId(){
+
+        return FirebaseInstanceId.getInstance().getId();
+    }
 
     public void LogOutAuth(){
 

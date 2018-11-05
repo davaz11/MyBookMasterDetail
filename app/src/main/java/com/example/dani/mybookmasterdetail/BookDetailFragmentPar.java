@@ -1,7 +1,6 @@
 package com.example.dani.mybookmasterdetail;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
@@ -12,10 +11,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.dani.mybookmasterdetail.helperClasses.DownloadImageTask;
-import com.example.dani.mybookmasterdetail.model.BookItem;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 
-import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
