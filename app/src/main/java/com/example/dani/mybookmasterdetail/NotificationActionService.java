@@ -86,6 +86,10 @@ public class NotificationActionService extends IntentService {
                     PendingIntent pending=OpenActivityDetailWithParentStack(book);
                     pending.send();
 
+                    //se colapsan las notificaciones
+                    Intent it = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                    getApplicationContext().sendBroadcast(it);
+
                 }
 
             }

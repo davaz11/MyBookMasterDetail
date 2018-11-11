@@ -115,69 +115,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService impleme
     }
 
 
-    //se muestra el detalle del libro, el titulo de la notificación debe coincidir con el titulo del libro sinó no muestra mensaje
-    private PendingIntent LoadBookDetailPendingIntent(){
-
-        try {
-            Book selectedBook=null;
-            String titleFromNotification=null;
-            for(Book b:DataSourceFireBase.bookListAppFireBase){
-
-                String title1=remoteMessageFromFireBase.getNotification().getTitle();
-                titleFromNotification=title1;
-                String title2=b.title;
-                if(title1!=null) title1=title1.replace(" ","").toLowerCase();
-
-                if(title2!=null) title2=title2.replace(" ","").toLowerCase();
-
-                if(title1.equals(title2)){
-                    selectedBook=b;
-                }
-            }
-
-            if(selectedBook==null){
-                Intent intentDetail = new Intent(this, BookListActivity.class);
-                intentDetail.putExtra("notificationNotDetail", true);
-                intentDetail.putExtra("bookTitle", titleFromNotification);
-               // intentDetail.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                intentDetail.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intentDetail, PendingIntent.FLAG_CANCEL_CURRENT);
-
-                return pendingIntent;
-            }else{
-
-               return  OpenActivityDetailWithParentStack(selectedBook);
-
-            }
-
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
-    }
-
-
-    private PendingIntent OpenActivityDetailWithParentStack(Book selectedBook){
-
-        // Create an Intent for the activity you want to start
-        Intent resultIntent = new Intent(this, BookDetailActivity.class);
-        resultIntent.putExtra(BookDetailFragmentPar.ARG_ITEM_ID, selectedBook);
-        // Create the TaskStackBuilder and add the intent, which inflates the back stack
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addNextIntentWithParentStack(resultIntent);
-        // Get the PendingIntent containing the entire back stack
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        return resultPendingIntent;
-    }
-
-
-    //el problema que no he podido solucionar es que si desde la notificación se elimina un item y se desde
-    //la misma notificación se quiere ver el detalle de ese mismo item no se puede, porque las acciones de los botones
-
     private void LoadExtendNotification(Bitmap myBitmap){
 
 
