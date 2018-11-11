@@ -17,9 +17,19 @@ public class BookSQLite {
 
     private static final String TAG="BookSQLite";
 
+    private static BookDbHelper mDbHelper =null;
+    private static SQLiteDatabase db = null;
+    private static Context context=null;
+
+
+
+
     public BookSQLite(){}
 
 
+    public static void SetContext(Context c){
+        context=c;
+    }
 
     public static void InsertSQLiteTest(Context c){
 
@@ -50,10 +60,10 @@ public class BookSQLite {
     public static void InsertBookList(Context c, List<Book> bookList){
 
         try {
-            BookDbHelper mDbHelper = new BookDbHelper(c);
 
-            // Gets the data repository in write mode
-            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+            if(context==null)context=c;
+            if(mDbHelper==null) mDbHelper = new BookDbHelper(context);
+            if(db==null)db = mDbHelper.getWritableDatabase();
 
 
             List<Book> bookListFromDB=GetBookList(c,mDbHelper);
@@ -86,8 +96,75 @@ public class BookSQLite {
 
 
 
+    public static int DeleteBookByName(Context c,String name){
+
+        try {
+            if(context==null)context=c;
+            if(mDbHelper==null) mDbHelper = new BookDbHelper(context);
+            if(db==null)db = mDbHelper.getWritableDatabase();
+
+            int result2=db.delete("book","title= ?",new String[] {name});
+
+            return result2;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return 0;
+        }
 
 
+    }
+
+
+    public static List<Book> GetBookByName(String name){
+
+        try {
+            if(mDbHelper==null) mDbHelper = new BookDbHelper(context);
+            if(db==null)db = mDbHelper.getWritableDatabase();
+
+            Cursor cursor= db.rawQuery("Select *  FROM book as b where b.title= ?",new String[] {name});
+            if(cursor!=null){
+              List<Book>  listBook=CreateListBooksFromCursor(cursor);
+              return listBook;
+            }else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+
+    public static List<Book> CreateListBooksFromCursor(Cursor cursor){
+
+        try {
+            List<Book> itemBookList = new ArrayList<Book>();
+            while(cursor.moveToNext()) {
+                Book b=new Book();
+                b.identificador=cursor.getColumnIndex(BookReaderContract.BookEntry.COLUMN_NAME_TITLE);
+                b.title= cursor.getString(cursor.getColumnIndexOrThrow(BookReaderContract.BookEntry.COLUMN_NAME_TITLE));
+                b.author= cursor.getString(cursor.getColumnIndexOrThrow(BookReaderContract.BookEntry.COLUMN_NAME_AUTHOR));
+                b.url_imagen= cursor.getString(cursor.getColumnIndexOrThrow(BookReaderContract.BookEntry._ID));
+
+                long dateTime=cursor.getLong(cursor.getColumnIndexOrThrow(BookReaderContract.BookEntry.COLUMN_NAME_PUBLICATION_DATE));
+                b.publication_date= new Date(dateTime);
+                b.description= cursor.getString(cursor.getColumnIndexOrThrow(BookReaderContract.BookEntry.COLUMN_NAME_DESCRIPTION));
+
+                itemBookList.add(b);
+            }
+            cursor.close();
+
+            return itemBookList;
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return null;
+
+        }
+
+    }
 
 
         public static List<Book> GetBookList(Context c,BookDbHelper mDbHelper){
@@ -105,35 +182,7 @@ public class BookSQLite {
 
                Cursor cursor= db.rawQuery("Select * FROM book",null);
 
-             /*
-               // Define a projection that specifies which columns from the database
-                // you will actually use after this query.
-                String[] projection = {
-                        BaseColumns._ID,
-                        BookReaderContract.BookEntry.COLUMN_NAME_TITLE,
-                        BookReaderContract.BookEntry.COLUMN_NAME_AUTHOR,
-                        BookReaderContract.BookEntry.COLUMN_NAME_DESCRIPTION,
-                        BookReaderContract.BookEntry.COLUMN_NAME_URL_IMAGEN,
-                        BookReaderContract.BookEntry.COLUMN_NAME_PUBLICATION_DATE
-                };
 
-               // Filter results WHERE "title" = 'My Title'
-                String selection = BookReaderContract.BookEntry.COLUMN_NAME_TITLE + " = ?";
-                String[] selectionArgs = { "My Title" };
-
-                // How you want the results sorted in the resulting Cursor
-                String sortOrder =  BookReaderContract.BookEntry.COLUMN_NAME_AUTHOR + " DESC";
-
-               Cursor cursor2 = db.query(
-                        BookReaderContract.BookEntry.TABLE_NAME,   // The table to query
-                        projection,             // The array of columns to return (pass null to get all)
-                        selection,              // The columns for the WHERE clause
-                        selectionArgs,          // The values for the WHERE clause
-                        null,                   // don't group the rows
-                        null,                   // don't filter by row groups
-                        sortOrder               // The sort order
-                );
-*/
 
                 List<Book> itemBookList = new ArrayList<Book>();
                 while(cursor.moveToNext()) {

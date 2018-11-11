@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 
 import io.realm.Realm;
+import io.realm.RealmResults;
 
 public class BookContent {
 
@@ -53,6 +54,30 @@ public class BookContent {
 
     }
 
+    public static void DeleteBook(Realm realm,String book){
+
+        try {
+
+            final String title=book;
+
+           realm.executeTransaction(new Realm.Transaction() {
+                @Override
+                public void execute(Realm realm) {
+                    RealmResults<Book> rows = realm.where(Book.class).equalTo("title",title).findAll();
+                    rows.deleteFirstFromRealm();
+
+                }
+            });
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+
+    }
+
+
     public static boolean ExistBooks(Realm realm,Book book)
     {
         Book b = realm.where(Book.class).equalTo("identificador", book.identificador).findFirst();
@@ -83,6 +108,8 @@ public class BookContent {
                     String b=im.child("description").getValue().toString();
                     String date=im.child("publication_date").getValue().toString();
                     String d=im.child("title").getValue().toString();
+                    Object t=im.child("url_image").getValue();
+
                     String e=im.child("url_image").getValue().toString();
 
                     DateFormat formater = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
@@ -90,7 +117,7 @@ public class BookContent {
 
                     book.author=a;
                     book.description=b;
-                    book.identificador=idBook;
+                    book.identificador=Integer.parseInt(im.getKey());
                     book.publication_date=dt;
                     book.title=d;
                     book.url_imagen=e;

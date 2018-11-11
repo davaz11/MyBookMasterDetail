@@ -1,6 +1,7 @@
 package com.example.dani.mybookmasterdetail;
 
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -12,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
+
+import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBase;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 
 /**
@@ -34,7 +37,7 @@ public class BookDetailActivity extends AppCompatActivity {
 
             Book item =(Book)getIntent().getSerializableExtra(BookDetailFragmentPar.ARG_ITEM_ID);
 
-                setContentView(R.layout.activity_item_detail);
+             setContentView(R.layout.activity_item_detail);
 
 
 

@@ -14,13 +14,18 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 public class DataSourceFireBase{
@@ -33,6 +38,8 @@ public class DataSourceFireBase{
     protected  FirebaseAuth mAuth;
     protected  FirebaseDatabase database;
     protected  FirebaseAuth.AuthStateListener mAuthListener;
+
+    public static List<Book> bookListAppFireBase;
 
     private   List<DataSourceFireBaseListener> listeners = new ArrayList<DataSourceFireBaseListener>();
 
@@ -227,6 +234,7 @@ public class DataSourceFireBase{
                     // no me han servido los  métodos genéricos que se proponen en la práctica así que he tenido que crear objeto nuevo y pasar atributo por atributo
                     // me prodrías mandar un ejemplo de como se hace la forma genérica?
                    List<Book> bookListApp= BookContent.ParseFireBaseDataToObject(dataSnapshot);
+                    bookListAppFireBase=bookListApp;
 
                     // Notify everybody that may be interested.
                     for (DataSourceFireBaseListener hl : listeners) {
@@ -255,7 +263,63 @@ public class DataSourceFireBase{
     }
 
 
+    public void AddFireBaseItem(){
 
+        try {
+            database = FirebaseDatabase.getInstance();
+
+           database.getReference()
+                    .child("books")
+                    .child("10").setValue(true);
+            String T="";
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void AddFireBaseBook(Book book){
+
+        try {
+            database = FirebaseDatabase.getInstance();
+
+
+          DatabaseReference bookRef=database.getReference()
+                    .child("books")
+                    .child(Integer.toString(book.identificador));
+
+            bookRef.child("author").setValue(book.author);
+            bookRef.child("description").setValue(book.description);
+
+
+            bookRef.child("publication_date").setValue("31/10/1980");
+            bookRef.child("title").setValue(book.title);
+            bookRef.child("url_image").setValue(book.url_imagen);
+
+
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void DeleteFireBaseItem(String idBook){
+
+        try {
+            database = FirebaseDatabase.getInstance();
+
+            database.getReference()
+                    .child("books")
+                    .child(idBook).setValue(null);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 //endregion
 

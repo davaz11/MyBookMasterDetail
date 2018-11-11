@@ -11,9 +11,12 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
+
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -40,6 +43,7 @@ import android.widget.TextView;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBaseListener;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 
 import org.xmlpull.v1.XmlPullParserException;
@@ -62,6 +66,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
      */
 
     String CHANNEL_ID="123";
+    static boolean isActive = false;
 
     //change type of loging
     private boolean useGmailLogin=false;
@@ -225,7 +230,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
     @Override
     public void onStart() {
         super.onStart();
-
+        isActive = true;
         if(mAuthListener!=null &mAuth!=null) {
             mAuth.addAuthStateListener(mAuthListener);
 
@@ -573,8 +578,100 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
     //endregion
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        //now getIntent() should always return the last received intent
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+
+
+        //se muestra dialogo cuando se borra un libro
+        if (getIntent().getBooleanExtra("notificationDelete", false) == true) {
+            getIntent().putExtra("notificationDelete", false);
+            String title="Libro "+getIntent().getStringExtra("bookTitle") +" eliminado";
+            ShowDialog(title);
+
+            //se colapsan las notificaciones
+            Intent it = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+            getApplicationContext().sendBroadcast(it);
+
+            //se muestra dialogo cuando no hay detalle y propone crear un libro nuevo
+        }else if(getIntent().getBooleanExtra("notificationNotDetail", false) == true){
+            getIntent().putExtra("notificationNotDetail", false);
+            ShowDialogDetail("No existe Detalle de este libro ¿Desea Crearlo?",getIntent().getStringExtra("bookTitle"));
+
+            //se colapsan las notificaciones
+            Intent it = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+            getApplicationContext().sendBroadcast(it);
+
+        }
+
+    }
+
+
+    private void ShowDialogDetail(String title,final String titleBook){
+        try {
+
+            AlertDialog.Builder builder=new AlertDialog.Builder(this);
+            builder.setTitle(title);
+
+
+
+            builder.setPositiveButton(R.string.si, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+
+                    Book testBook=new Book();
+                    testBook.author="";
+                    testBook.title=titleBook;
+                    testBook.description="";
+                    testBook.url_imagen="";
+                    testBook.publication_date=new Date();
+                    testBook.identificador=11;
+                    dataSourceFireBase.AddFireBaseBook(testBook);
+                }
+            });
+            builder.setNegativeButton(R.string.no,null);
+
+            AlertDialog dialog= builder.create();
+            dialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    private void ShowDialog(String title){
+        try {
+
+            AlertDialog.Builder builder=new AlertDialog.Builder(this);
+            builder.setTitle(title);
+
+            builder.setPositiveButton(R.string.si, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+          //  builder.setNegativeButton(R.string.no,null);
+
+            AlertDialog dialog= builder.create();
+            dialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
+        isActive = false;
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
