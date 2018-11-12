@@ -33,27 +33,49 @@ public class NotificationActionService extends IntentService {
         try {
             String action = intent.getAction();
 
+
+
+            Book selectedBook=null;
+            String idBook=intent.getStringExtra("BOOK_ID");
+
+                for(Book b:DataSourceFireBase.bookListAppFireBase){
+
+                    if(Integer.toString(b.identificador).equals(idBook)){
+                        selectedBook=b;
+                    }
+                }
+
+
+
             if (ACTION_DELETE_BOOK.equals(action)) {
 
-                String bookTitle=intent.getStringExtra("BOOK_TITLE");
+                //mostrar mensaje si queremos borrar un item que no está en la base de datos
+                if(selectedBook==null){
+                    Intent intentDetail = new Intent(this, BookListActivity.class);
+                    intentDetail.putExtra("notificationNotDelete", true);
+                    intentDetail.putExtra("bookId", idBook);
+                    intentDetail.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intentDetail);
+                    return;
+                }
 
                 //borrar local en SQLITE
                 BookSQLite.SetContext(getApplicationContext());
-               int result=BookSQLite.DeleteBookByName(null,bookTitle);
+               int result=BookSQLite.DeleteBookByName(null,selectedBook.title);
 
                 //borrar local en Realm
                 Realm.init(getApplicationContext());
                 Realm realm = Realm.getDefaultInstance();
-                 BookContent.DeleteBook(realm,bookTitle);
+                 BookContent.DeleteBook(realm,selectedBook.title);
 
                  //también borro en Firebase para poder apreciar bien los cambios en la aplicación
-                DeleteBookFromFirebase(bookTitle);
+                DeleteBookFromFirebase(selectedBook.title);
 
 
                 //volvemos a la pantalla principal de la aplicación para mostrar un mensaje emergente
                 Intent intentMain=new Intent(getApplicationContext(), BookListActivity.class);
                 intentMain.putExtra("notificationDelete",true);
-                intentMain.putExtra("bookTitle",bookTitle);
+                intentMain.putExtra("bookTitle",selectedBook.title);
                 intentMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
                 startActivity(intentMain);
@@ -63,27 +85,17 @@ public class NotificationActionService extends IntentService {
 
             }else if(ACTION_DETAIL_BOOK.equals(action)){
 
-                String bookTitle=intent.getStringExtra("BOOK_TITLE");
 
-
-                Book book=null;
-                for(Book b:DataSourceFireBase.bookListAppFireBase){
-
-                    if(b.title.equals(bookTitle)){
-                        book=b;
-                    }
-                }
-
-                if(book==null){
+                if(selectedBook==null){
                     Intent intentDetail = new Intent(this, BookListActivity.class);
                     intentDetail.putExtra("notificationNotDetail", true);
-                    intentDetail.putExtra("bookTitle", bookTitle);
+                    intentDetail.putExtra("bookId", idBook);
                     intentDetail.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intentDetail);
 
                 }else{
 
-                    PendingIntent pending=OpenActivityDetailWithParentStack(book);
+                    PendingIntent pending=OpenActivityDetailWithParentStack(selectedBook);
                     pending.send();
 
                     //se colapsan las notificaciones

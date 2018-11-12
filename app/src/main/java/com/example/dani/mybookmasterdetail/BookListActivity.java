@@ -602,22 +602,30 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
             //se muestra dialogo cuando no hay detalle y propone crear un libro nuevo
         }else if(getIntent().getBooleanExtra("notificationNotDetail", false) == true){
             getIntent().putExtra("notificationNotDetail", false);
-            ShowDialogDetail("No existe Detalle de este libro ¿Desea Crearlo?",getIntent().getStringExtra("bookTitle"));
+            ShowDialogDetail("No existe Detalle de este libro ¿Desea Crearlo?",getIntent().getStringExtra("bookId"));
 
             //se colapsan las notificaciones
             Intent it = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
             getApplicationContext().sendBroadcast(it);
 
+        }else if(getIntent().getBooleanExtra("notificationNotDelete", false) == true){
+            getIntent().putExtra("notificationNotDelete", false);
+            ShowDialog("El libro no existe");
+
+            //se colapsan las notificaciones
+            Intent it = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+            getApplicationContext().sendBroadcast(it);
         }
 
     }
 
 
-    private void ShowDialogDetail(String title,final String titleBook){
+    private void ShowDialogDetail(String title,final String bookId){
         try {
 
             AlertDialog.Builder builder=new AlertDialog.Builder(this);
             builder.setTitle(title);
+
 
 
 
@@ -628,11 +636,11 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
                     Book testBook=new Book();
                     testBook.author="";
-                    testBook.title=titleBook;
+                    testBook.title="Book"+bookId;
                     testBook.description="";
                     testBook.url_imagen="";
                     testBook.publication_date=new Date();
-                    testBook.identificador=11;
+                    testBook.identificador=Integer.parseInt(bookId);
                     dataSourceFireBase.AddFireBaseBook(testBook);
                 }
             });

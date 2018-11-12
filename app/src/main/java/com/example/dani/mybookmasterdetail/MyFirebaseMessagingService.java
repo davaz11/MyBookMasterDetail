@@ -55,12 +55,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService impleme
             String stringBody=notification.getBody();
 
 
-            //si el cuerpo del mensaje es una url se busca la imagen y se muestra en la notificación
-            if(stringBody.contains("https:")){
+            String urlImage=remoteMessage.getData().get("url_image");
+
+
+            //si el segundo parámetro es una url buscará la imagen
+            if(urlImage!=null & urlImage!=""){
 
                 imageTask=new DownloadImageTask();
                 imageTask.addListener(this);
-                imageTask.execute(stringBody);
+                imageTask.execute(urlImage);
 
             }else{
                 LoadExtendNotification(null);
@@ -75,19 +78,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService impleme
     @Override
     public void onLoadImageTaskListener(Object returnValue) {
 
-        Bitmap myBitmap=(Bitmap)returnValue;
-        LoadExtendNotification(myBitmap);
-
+        if(returnValue==null) {
+            LoadExtendNotification(null);
+        }else{
+            Bitmap myBitmap=(Bitmap)returnValue;
+            LoadExtendNotification(myBitmap);
+        }
     }
 
 
 
 
-    private PendingIntent DeleteBookPendingIntent(){
+    private PendingIntent DeleteBookPendingIntent(String idBook){
         try {
             Intent actionDeleteIntent = new Intent(this, NotificationActionService.class)
                     .setAction(ACTION_DELETE_BOOK);
-            actionDeleteIntent.putExtra("BOOK_TITLE", remoteMessageFromFireBase.getNotification().getTitle());
+            actionDeleteIntent.putExtra("BOOK_ID",idBook);
             PendingIntent actionDeletePendingIntent = PendingIntent.getService(this, 0,
                     actionDeleteIntent,0);
 
@@ -99,11 +105,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService impleme
     }
 
 
-    private PendingIntent DetailBookPendingIntent(){
+    private PendingIntent DetailBookPendingIntent(String idBook){
         try {
             Intent actionDetailIntent = new Intent(this, NotificationActionService.class)
                     .setAction(ACTION_DETAIL_BOOK);
-            actionDetailIntent.putExtra("BOOK_TITLE", remoteMessageFromFireBase.getNotification().getTitle());
+            actionDetailIntent.putExtra("BOOK_ID", idBook);
             PendingIntent actionDeletePendingIntent = PendingIntent.getService(this, 0,
                     actionDetailIntent, 0);
 
@@ -119,8 +125,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService impleme
 
 
         try {
-            PendingIntent deletePendingIntent=DeleteBookPendingIntent();
-            PendingIntent detailPendingIntent=DetailBookPendingIntent();
+
+            String idBook=remoteMessageFromFireBase.getData().get("book_position");
+
+            if(idBook==null | idBook=="")return;
+
+            PendingIntent deletePendingIntent=DeleteBookPendingIntent(idBook);
+            PendingIntent detailPendingIntent=DetailBookPendingIntent(idBook);
 
             int notificationId=1234;
 
