@@ -1,5 +1,6 @@
 package com.example.dani.mybookmasterdetail;
 import com.example.dani.mybookmasterdetail.helperClasses.DeviceType;
+import com.example.dani.mybookmasterdetail.helperClasses.DownloadImageTask;
 import com.example.dani.mybookmasterdetail.helperClasses.NetworkReceiver;
 import com.example.dani.mybookmasterdetail.model.BookItem;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBase;
@@ -29,6 +30,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
@@ -39,8 +41,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 import android.widget.TextView;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBaseListener;
+import com.squareup.picasso.Picasso;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
@@ -292,6 +297,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+        toolbar.setNavigationIcon(R.drawable.ic_import_contacts_black_24dp_white);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -336,8 +342,12 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, bookListApp, mTwoPane));
-
+        try {
+            recyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+            recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, bookListApp, mTwoPane));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
     }
@@ -427,15 +437,23 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
             try{
 
 
+                //se cargan las imagenes de forma dinámica desde los datos en el xml
+                // int idImage = getResources().getIdentifier(getContext().getPackageName() + ":drawable/" + item.url_imagen, null, null);
+               //
+
+               // new DownloadImageTask(image).execute(mValues.get(position).url_imagen);
+               String urlImage=mValues.get(position).url_imagen;
+
+               if(!urlImage.equals("")) {
+                   ImageView image = holder.itemView.findViewById(R.id.imageView2);
+                   Picasso.with(holder.mContentView.getContext()).load(urlImage).into(image);
+               }
+
+
                 holder.mIdView.setText(Integer.toString(mValues.get(position).identificador));
                 holder.mContentView.setText(mValues.get(position).title);
-
-
-
                 holder.itemView.setTag(mValues.get(position));
                 holder.itemView.setOnClickListener(mOnClickListener);
-
-
                 setAnimation(holder.itemView, position);
 
             }catch (Exception e)

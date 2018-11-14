@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.example.dani.mybookmasterdetail.helperClasses.DownloadImageTask;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
+import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -89,8 +90,8 @@ public class BookDetailFragmentPar extends Fragment {
            // int idImage = getResources().getIdentifier(getContext().getPackageName() + ":drawable/" + item.url_imagen, null, null);
             ImageView image = activity.findViewById(R.id.imageView);
 
-            new DownloadImageTask(image).execute(item.url_imagen);
-
+           // new DownloadImageTask(image).execute(item.url_imagen);
+            Picasso.with(getContext()).load(item.url_imagen).into(image);
 
             //image.setImageResource(idImage);
 

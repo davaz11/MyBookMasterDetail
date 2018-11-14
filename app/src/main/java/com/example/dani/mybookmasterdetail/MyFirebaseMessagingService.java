@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -136,23 +137,27 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService impleme
             int notificationId=1234;
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                    .setSmallIcon(R.drawable.ic_import_contacts_black_24dp)
                     .setContentTitle(remoteMessageFromFireBase.getNotification().getTitle())
                     .setContentText(remoteMessageFromFireBase.getNotification().getBody())
                     .setLargeIcon(myBitmap)
                     .addAction(new NotificationCompat.Action(R.drawable.common_google_signin_btn_icon_light,
                             "Delete", deletePendingIntent))
                     .addAction(R.drawable.common_google_signin_btn_icon_dark, "Visualize", detailPendingIntent) // #0
-
-                   // .addAction(new NotificationCompat.Action(R.drawable.common_google_signin_btn_icon_dark,
-                     //       "Visualize", detailPendingIntent))
                     .setStyle(new NotificationCompat.BigPictureStyle()
                             .bigPicture(myBitmap)
                             .bigLargeIcon(null))
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    //Vibration
+                    .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
+                    //LED
+                    .setLights(getResources().getColor(R.color.NotificationBlue), 3000, 3000)
+                    //Ton
+                    .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
 
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
             notificationManager.notify(notificationId, mBuilder.build());
+
 
         } catch (Exception e) {
             e.printStackTrace();
