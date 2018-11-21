@@ -90,8 +90,8 @@ public class BookDetailFragmentPar extends Fragment {
            // int idImage = getResources().getIdentifier(getContext().getPackageName() + ":drawable/" + item.url_imagen, null, null);
             ImageView image = activity.findViewById(R.id.imageView);
 
-           // new DownloadImageTask(image).execute(item.url_imagen);
-            Picasso.with(getContext()).load(item.url_imagen).into(image);
+           //new DownloadImageTask(image).execute(item.url_imagen);
+           Picasso.with(getContext()).load(item.url_imagen).into(image);
 
             //image.setImageResource(idImage);
 

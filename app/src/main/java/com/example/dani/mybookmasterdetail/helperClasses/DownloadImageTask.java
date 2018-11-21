@@ -10,6 +10,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -45,11 +46,13 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         Bitmap bmp = null;
 
         try {
-            bmp=ConnectWithTLSsecurity(urldisplay);
+            bmp=ConnectSSL(new URL(urldisplay));
+
+           /* bmp=ConnectWithTLSsecurity(urldisplay);
             if(bmp==null){
 
                 bmp=ConnectWithOutsecurity(urldisplay);
-            }
+            }*/
         } catch (Exception e) {
             Log.e("Error", e.getMessage());
             e.printStackTrace();
@@ -105,6 +108,23 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
             return null;
         }
     }
+
+    private Bitmap ConnectSSL(URL url){
+
+        try {
+            URLConnection urlConnection = url.openConnection();
+            InputStream in = urlConnection.getInputStream();
+            Bitmap bmp = BitmapFactory.decodeStream(in);
+            return bmp;
+        } catch (IOException e) {
+
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+
 
     private Bitmap ConnectWithTLSsecurity(String urlParam) {
 

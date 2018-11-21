@@ -23,11 +23,14 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.GridLayoutManager;
@@ -44,6 +47,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBaseListener;
+
+//import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -149,7 +154,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
        //con conexión a internet
         if(refreshDisplay){
-//fE7xOTWA-OY
+
           String t=dataSourceFireBase.GetFireBaseId();
 
           if(useGmailLogin) {
@@ -184,6 +189,23 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
         try {
             if(returnValue!=null)
             {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if (user != null) {
+
+                    TextView textName=(TextView)findViewById(R.id.drawer_name_user);
+                    TextView textEmail=(TextView)findViewById(R.id.drawer_email_user);
+                    textName.setText(user.getDisplayName());
+                    textEmail.setText(user.getEmail());
+                    Uri urlImage =user.getPhotoUrl();
+
+                       if(urlImage!=null){
+                         String imageString= urlImage.toString();
+                       }
+
+
+                }
+
+
                 bookListApp=(List<Book>)returnValue;
 
                 LoadRecliclerView();
@@ -200,6 +222,11 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
                 Log.d(TAG, "SQLITE DataBase Updated");
 
                 swipeContainer.setRefreshing(false);
+
+
+
+
+
 
             }else{
                 LoadDataNotInternet();
@@ -292,7 +319,10 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
     //region LAYOUT  B
     private void  LoadLayout(){
 
-        setContentView(R.layout.activity_item_list);
+
+        //setContentView(R.layout.activity_item_list);
+
+        setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -323,6 +353,18 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         RefreshWithSwipe();
+
+
+
+       DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.open, R.string.close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+
+
+
     }
 
 

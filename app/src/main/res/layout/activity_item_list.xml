@@ -7,6 +7,7 @@
     android:fitsSystemWindows="true"
     tools:context=".BookListActivity">
 
+
     <android.support.design.widget.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
@@ -40,6 +41,8 @@
         android:layout_margin="@dimen/fab_margin"
         app:srcCompat="@drawable/ic_sentiment_satisfied_black_60dp" />
 
-
-
 </android.support.design.widget.CoordinatorLayout>
+
+
+
+
