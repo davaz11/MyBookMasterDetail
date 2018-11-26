@@ -23,13 +23,13 @@
         android:layout_width="352dp"
         android:layout_height="wrap_content"
 
-        android:text="Cesar Augusto Garrido"
+        android:text=""
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
     <TextView
         android:id="@+id/drawer_email_user"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="cesar@hotmail.com" />
+        android:text="" />
 
 </LinearLayout>

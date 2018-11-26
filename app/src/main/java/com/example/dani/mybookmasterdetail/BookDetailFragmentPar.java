@@ -39,18 +39,24 @@ public class BookDetailFragmentPar extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
+        try {
+            if (getArguments().containsKey(ARG_ITEM_ID)) {
 
-            Book item = (Book)getArguments().getSerializable(ARG_ITEM_ID);
-            Activity activity = this.getActivity();
+               // Book item = (Book)getArguments().getSerializable(ARG_ITEM_ID);
+
+                Book item=SharedData.bookItem;
+                Activity activity = this.getActivity();
 
 
-            //se setea el título
-            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
-            if (appBarLayout != null) {
-                appBarLayout.setTitle(item.title);
+                //se setea el título
+                CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
+                if (appBarLayout != null) {
+                    appBarLayout.setTitle(item.title);
+                }
+
             }
-
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }

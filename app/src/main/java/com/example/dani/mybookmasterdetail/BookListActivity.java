@@ -2,6 +2,7 @@ package com.example.dani.mybookmasterdetail;
 import com.example.dani.mybookmasterdetail.helperClasses.DeviceType;
 import com.example.dani.mybookmasterdetail.helperClasses.DownloadImageTask;
 import com.example.dani.mybookmasterdetail.helperClasses.NetworkReceiver;
+import com.example.dani.mybookmasterdetail.menuAction.ShareData;
 import com.example.dani.mybookmasterdetail.model.BookItem;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBase;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
@@ -16,6 +17,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -28,6 +31,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -40,11 +45,13 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
+import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBaseListener;
 
@@ -68,7 +75,7 @@ import io.realm.Realm;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class BookListActivity extends AppCompatActivity implements DataSourceFireBaseListener {
+public class BookListActivity extends AppCompatActivity implements DataSourceFireBaseListener, NavigationView.OnNavigationItemSelectedListener {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -96,7 +103,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
     private DataSourceFireBase dataSourceFireBase;
 
     SwipeRefreshLayout swipeContainer;
-
+    DrawerLayout drawer;
 
     //region NETWORK_PROPERTIES
     public static final String WIFI = "Wi-Fi";
@@ -194,8 +201,8 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
                     TextView textName=(TextView)findViewById(R.id.drawer_name_user);
                     TextView textEmail=(TextView)findViewById(R.id.drawer_email_user);
-                    textName.setText(user.getDisplayName());
-                    textEmail.setText(user.getEmail());
+                    if(textName!=null) textName.setText(user.getDisplayName());
+                    if(textEmail!=null)textEmail.setText(user.getEmail());
                     Uri urlImage =user.getPhotoUrl();
 
                        if(urlImage!=null){
@@ -356,16 +363,72 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
 
 
-       DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.open, R.string.close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
 
 
     }
+
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle navigation view item clicks here.
+        switch (item.getItemId()) {
+
+            case R.id.share: {
+
+                Uri imageUri = Uri.parse("android.resource://" + getPackageName()+"/" + R.drawable.america);
+
+
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "envio imagen de mi profile");
+                shareIntent.setType("application/image");
+                startActivity(Intent.createChooser(shareIntent, "Send mail..."));
+
+                //do somthing
+                break;
+            }case R.id.copy: {
+
+                // Gets a handle to the clipboard service.
+                ClipboardManager clipboard = (ClipboardManager)
+                        getSystemService(Context.CLIPBOARD_SERVICE);
+
+                ClipData clip = ClipData.newPlainText("simple text", "MyBookMasterDetail copypaste!");
+
+                // Set the clipboard's primary clip.
+                clipboard.setPrimaryClip(clip);
+
+                //do somthing
+                break;
+            }case R.id.share_whatsapp: {
+                Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
+                whatsappIntent.setType("text/plain");
+                whatsappIntent.setPackage("com.whatsapp");
+                whatsappIntent.putExtra(Intent.EXTRA_TEXT, "The text you wanted to share");
+                try {
+                    startActivity(whatsappIntent);
+                } catch (android.content.ActivityNotFoundException ex) {
+
+                }
+
+                break;
+            }
+        }
+        //close navigation drawer
+        item.setChecked(false);
+
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
 
 
     private void LoadRecliclerView(){
@@ -396,6 +459,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
 
 
+
     public static class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
@@ -408,6 +472,9 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
             public void onClick(View view) {
                 try {
                     Book item = (Book) view.getTag();
+
+                   SharedData.bookItem=item;
+
                     if (mTwoPane) {
                         Bundle arguments = new Bundle();
                         arguments.putSerializable(BookDetailFragmentPar.ARG_ITEM_ID, item);
@@ -420,7 +487,7 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
                         //Se envia el item seleccionado en el intent para utilizarlo en la siguiente pantalla
                         Context context = view.getContext();
                         Intent intent = new Intent(context, BookDetailActivity.class);
-                        intent.putExtra(BookDetailFragmentPar.ARG_ITEM_ID, item);
+                        //intent.putExtra(BookDetailFragmentPar.ARG_ITEM_ID, item);
                         context.startActivity(intent);
 
 
