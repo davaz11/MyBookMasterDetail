@@ -1,6 +1,7 @@
 package com.example.dani.mybookmasterdetail;
 import com.example.dani.mybookmasterdetail.helperClasses.DeviceType;
 import com.example.dani.mybookmasterdetail.helperClasses.DownloadImageTask;
+import com.example.dani.mybookmasterdetail.helperClasses.Manager;
 import com.example.dani.mybookmasterdetail.helperClasses.NetworkReceiver;
 import com.example.dani.mybookmasterdetail.menuAction.ShareData;
 import com.example.dani.mybookmasterdetail.model.BookItem;
@@ -383,18 +384,22 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
             case R.id.share: {
 
-                Uri imageUri = Uri.parse("android.resource://" + getPackageName()+"/" + R.drawable.america);
 
+                try {
+                    Uri imageUri= Manager.ImageResourceToUriTempFile(this,R.mipmap.ic_launcher);
+                    Intent shareIntent = new Intent();
+                    shareIntent.setAction(Intent.ACTION_SEND);
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, "Hello");
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+                    shareIntent.setType("image/jpeg");
+                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(shareIntent, "send"));
 
-                Intent shareIntent = new Intent();
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, "envio imagen de mi profile");
-                shareIntent.setType("application/image");
-                startActivity(Intent.createChooser(shareIntent, "Send mail..."));
-
-                //do somthing
-                break;
+                    //do somthing
+                    break;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }case R.id.copy: {
 
                 // Gets a handle to the clipboard service.

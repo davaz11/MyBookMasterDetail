@@ -13,6 +13,16 @@
         android:theme="@style/AppTheme">
 
 
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.example.dani.mybookmasterdetailn"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/my_paths" />
+        </provider>
+
         <service android:name=".MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>

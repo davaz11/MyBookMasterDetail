@@ -1,13 +1,17 @@
 package com.example.dani.mybookmasterdetail;
 
 
-import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
@@ -21,11 +25,15 @@ import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 import android.webkit.WebView;
 
+import com.example.dani.mybookmasterdetail.helperClasses.Manager;
+import com.example.dani.mybookmasterdetail.helperClasses.PicassoGetImageListener;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBase;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 import com.google.android.gms.common.util.IOUtils;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +45,7 @@ import java.io.InputStreamReader;
  * item details are presented side-by-side with a list of items
  * in a {@link BookListActivity}.
  */
-public class BookDetailActivity extends AppCompatActivity {
+public class BookDetailActivity extends AppCompatActivity implements PicassoGetImageListener {
 
     Toolbar toolbar;
     Book bookItem;
@@ -111,11 +119,11 @@ public class BookDetailActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.activity_detail_toolbar, menu);
+      inflater.inflate(R.menu.activity_detail_toolbar, menu);
         return true;
     }
 
-
+/*
     private String RawFileToString(int idRawFile){
         StringBuilder contentBuilder = new StringBuilder();
         try {
@@ -132,7 +140,7 @@ public class BookDetailActivity extends AppCompatActivity {
        return contentBuilder.toString();
 
     }
-
+*/
     //botones de la toolbar
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -145,32 +153,29 @@ public class BookDetailActivity extends AppCompatActivity {
                 return true;
 
             //aunque no es buen sitio para el menú he hecho pruebas para ver si podía abrir el menú desde el detalle
-            } else if (id == R.id.action_menu) {
-                DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-                NavigationView nav = (NavigationView) findViewById(R.id.nav_view);
-                drawer.openDrawer(nav);
 
-            //he creado un botón para compartir el contenido del detalle del libro(la imagen y el título) a traves del mail
             } else if (id == R.id.action_share) {
 
             if(bookItem!=null){
+
+
+               //  Manager.AddListenerPicasso(this);
+                //Uri imatgeAEnviar = Manager.ImagePathToUriTempFile(this,bookItem.url_imagen);
+
+                Uri fileProv=prepararImatge();
+
+               // Uri fileProv=FileProvider.getUriForFile(this.getApplicationContext(), this.getPackageName(), f);
+
+
                 Intent shareIntent = new Intent();
                 shareIntent.setAction(Intent.ACTION_SEND);
-
-                if(bookItem.url_imagen.contains("https://") & bookItem.url_imagen.contains(".jpg")) {
-
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, bookItem.url_imagen);
-                }
-
-                shareIntent.putExtra(Intent.EXTRA_TEXT, bookItem.title);
-                shareIntent.setType("image/jpg");
-                startActivity(shareIntent);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "Hello");
+                shareIntent.putExtra(Intent.EXTRA_STREAM, (Uri)fileProv);
+                shareIntent.setType("image/jpeg");
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(Intent.createChooser(shareIntent, "send"));
             }
-
-
-
             }
-
 
 
             return super.onOptionsItemSelected(item);
@@ -181,4 +186,58 @@ public class BookDetailActivity extends AppCompatActivity {
         }
 
     }
+
+    @Override
+    public void onLoadImagePicassoListener(Object returnValue) {
+
+        try {
+            if(returnValue!=null){
+
+                File f=new File(returnValue.toString());
+
+                Uri fileProv=FileProvider.getUriForFile(this.getApplicationContext(), this.getPackageName(), f);
+
+
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "Hello");
+                shareIntent.putExtra(Intent.EXTRA_STREAM, (Uri)fileProv);
+                shareIntent.setType("image/jpeg");
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(Intent.createChooser(shareIntent, "send"));
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    private Uri prepararImatge() {
+
+        Drawable drawable = getResources().getDrawable(R.mipmap.ic_launcher);
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        File imagePath = new File(getFilesDir(), "temporal");
+        imagePath.mkdir();
+        File imageFile = new File(imagePath.getPath(), "app_icon.png");
+
+        try {
+            FileOutputStream fos = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return FileProvider.getUriForFile(getApplicationContext(), getPackageName(), imageFile);
+
+    }
+
 }
+
