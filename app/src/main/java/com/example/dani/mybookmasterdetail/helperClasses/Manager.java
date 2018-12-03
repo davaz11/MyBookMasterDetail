@@ -4,14 +4,10 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.content.FileProvider;
-import android.widget.ImageView;
-
-import com.example.dani.mybookmasterdetail.R;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -33,8 +29,9 @@ public class Manager  {
     public static Uri ImagePathToUriTempFile(final Activity activity, String image) {
 
 
-        String[] t=image.split("(?=/)");
-        final String nameImage=t[t.length-1].replace("/","").replace(".","");
+        String[] t=image.split("(?=\\.|\\/)");
+
+        final String nameImage=t[t.length-2].replace("/","");
 
 
         Picasso.with(activity.getApplicationContext()).load(image).into(new Target() {

@@ -152,28 +152,14 @@ public class BookDetailActivity extends AppCompatActivity implements PicassoGetI
                 NavUtils.navigateUpTo(this, intent);
                 return true;
 
-            //aunque no es buen sitio para el menú he hecho pruebas para ver si podía abrir el menú desde el detalle
 
+                // se comparte la imagen del libro y el título
             } else if (id == R.id.action_share) {
 
             if(bookItem!=null){
+                 Manager.AddListenerPicasso(this);
+                Uri imatgeAEnviar = Manager.ImagePathToUriTempFile(this,bookItem.url_imagen);
 
-
-               //  Manager.AddListenerPicasso(this);
-                //Uri imatgeAEnviar = Manager.ImagePathToUriTempFile(this,bookItem.url_imagen);
-
-                Uri fileProv=prepararImatge();
-
-               // Uri fileProv=FileProvider.getUriForFile(this.getApplicationContext(), this.getPackageName(), f);
-
-
-                Intent shareIntent = new Intent();
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, "Hello");
-                shareIntent.putExtra(Intent.EXTRA_STREAM, (Uri)fileProv);
-                shareIntent.setType("image/jpeg");
-                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivity(Intent.createChooser(shareIntent, "send"));
             }
             }
 
@@ -187,6 +173,8 @@ public class BookDetailActivity extends AppCompatActivity implements PicassoGetI
 
     }
 
+
+    // se comparte la imagen del libro y el título
     @Override
     public void onLoadImagePicassoListener(Object returnValue) {
 
@@ -200,7 +188,7 @@ public class BookDetailActivity extends AppCompatActivity implements PicassoGetI
 
                 Intent shareIntent = new Intent();
                 shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, "Hello");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, bookItem.title);
                 shareIntent.putExtra(Intent.EXTRA_STREAM, (Uri)fileProv);
                 shareIntent.setType("image/jpeg");
                 shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -210,32 +198,6 @@ public class BookDetailActivity extends AppCompatActivity implements PicassoGetI
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-    }
-
-
-    private Uri prepararImatge() {
-
-        Drawable drawable = getResources().getDrawable(R.mipmap.ic_launcher);
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-
-        File imagePath = new File(getFilesDir(), "temporal");
-        imagePath.mkdir();
-        File imageFile = new File(imagePath.getPath(), "app_icon.png");
-
-        try {
-            FileOutputStream fos = new FileOutputStream(imageFile);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            fos.flush();
-            fos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-        return FileProvider.getUriForFile(getApplicationContext(), getPackageName(), imageFile);
 
     }
 
