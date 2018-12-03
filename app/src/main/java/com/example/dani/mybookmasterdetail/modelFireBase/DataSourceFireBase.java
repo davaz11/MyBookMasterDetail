@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.example.dani.mybookmasterdetail.SharedData;
 import com.example.dani.mybookmasterdetail.modelRealmORM.Book;
 import com.example.dani.mybookmasterdetail.modelRealmORM.BookContent;
 import com.firebase.ui.auth.AuthUI;
@@ -235,6 +236,7 @@ public class DataSourceFireBase{
                     // me prodrías mandar un ejemplo de como se hace la forma genérica?
                    List<Book> bookListApp= BookContent.ParseFireBaseDataToObject(dataSnapshot);
                     bookListAppFireBase=bookListApp;
+                    SharedData.SetBookList(bookListApp);
 
                     // Notify everybody that may be interested.
                     for (DataSourceFireBaseListener hl : listeners) {

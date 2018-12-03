@@ -10,6 +10,7 @@ import com.example.dani.mybookmasterdetail.modelRealmORM.BookContent;
 import com.example.dani.mybookmasterdetail.modelSQLite.BookSQLite;
 import com.example.dani.mybookmasterdetail.parserXML.ParserXML;
 import com.firebase.ui.auth.IdpResponse;
+import com.google.android.gms.common.util.IOUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
@@ -17,8 +18,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.SearchManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,7 +35,9 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -44,13 +49,19 @@ import android.support.v7.widget.Toolbar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.view.ActionProvider;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBaseListener;
@@ -58,13 +69,19 @@ import com.example.dani.mybookmasterdetail.modelFireBase.DataSourceFireBaseListe
 //import com.mikepenz.materialdrawer.DrawerBuilder;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.xmlpull.v1.XmlPullParserException;
 import io.realm.Realm;
+
+import static java.security.AccessController.getContext;
 
 
 /**
@@ -75,7 +92,10 @@ import io.realm.Realm;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class BookListActivity extends AppCompatActivity implements DataSourceFireBaseListener, NavigationView.OnNavigationItemSelectedListener {
+public class BookListActivity extends AppCompatActivity implements
+        DataSourceFireBaseListener,
+        NavigationView.OnNavigationItemSelectedListener
+ {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -186,6 +206,10 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
         Log.w(TAG, e.getMessage());
     }
     }
+
+
+
+
 
 
     //evento retorno que se dispara cuando firebase devuelve datos
@@ -323,7 +347,81 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
     //endregion
 
 
-    //region LAYOUT  B
+    //region SEARCH_MENU
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        try {
+            MenuInflater inflater = getMenuInflater();
+            inflater.inflate(R.menu.activity_main_toolbar, menu);
+
+
+            // Get the search menu.
+            android.support.v7.widget.SearchView searchView = (android.support.v7.widget.SearchView)menu.findItem(R.id.app_bar_menu_search).getActionView();
+
+
+            android.support.v7.widget.SearchView.SearchAutoComplete searchAutoComplete = searchView.findViewById(android.support.v7.appcompat.R.id.search_src_text);
+            ArrayAdapter<String> newsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, SharedData.GetSearchDataDropDown());
+
+            searchAutoComplete.setAdapter(newsAdapter);
+
+            // Listen to search view item on click event.
+            searchAutoComplete.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int itemIndex, long id) {
+                    String query=(String)adapterView.getItemAtPosition(itemIndex);
+
+                    bookListApp=SearchBooks(query);
+                    LoadRecliclerView();
+
+               }
+            });
+
+            searchAutoComplete.setOnFocusChangeListener(new AdapterView.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+               if(!hasFocus) {
+                   bookListApp = SharedData.GetBookList();
+                   LoadRecliclerView();
+               }
+                }
+
+            });
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private List<Book> SearchBooks(String query){
+        try {
+            SharedData.GetSearchBookList().clear();
+
+            //se busca en la lista total de libros
+            for(Book b:SharedData.GetBookList()){
+                if(b.title==query){
+
+                    //la busqueda se guarda en una lista aparte
+                    SharedData.GetSearchBookList().add(b);
+                }
+            }
+
+            //la lista de la activity es siempre lo que se visualiza en pantalla
+            return SharedData.GetSearchBookList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    //endregion
+
+
+
+    //region LAYOUT
     private void  LoadLayout(){
 
 
@@ -333,8 +431,6 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
-        toolbar.setNavigationIcon(R.drawable.ic_import_contacts_black_24dp_white);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -376,6 +472,54 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
     }
 
 
+     private void WriteResourceFileToAndroidDataFile(int idRawFile){
+         InputStream inputStream = null;
+        // OutputStream outputStream = null;
+         FileOutputStream outputStream=null;
+
+         try {
+
+             inputStream = getApplicationContext().getResources().openRawResource(idRawFile);
+
+
+             String fileDirectory=getApplicationContext().getFilesDir()+File.separator+"images"+File.separator;
+
+             File file = new File(fileDirectory, "profile_image.jpg");
+             outputStream = new FileOutputStream(file);
+
+             int read = 0;
+             byte[] bytes = new byte[1024];
+
+             while ((read = inputStream.read(bytes)) != -1) {
+                 outputStream.write(bytes, 0, read);
+             }
+
+             outputStream.close();
+
+
+         } catch (IOException e) {
+             e.printStackTrace();
+         } finally {
+             if (inputStream != null) {
+                 try {
+                     inputStream.close();
+                 } catch (IOException e) {
+                     e.printStackTrace();
+                 }
+             }
+             if (outputStream != null) {
+                 try {
+                     // outputStream.flush();
+                     outputStream.close();
+                 } catch (IOException e) {
+                     e.printStackTrace();
+                 }
+
+             }
+         }
+
+     }
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
@@ -383,17 +527,47 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
             case R.id.share: {
 
-                Uri imageUri = Uri.parse("android.resource://" + getPackageName()+"/" + R.drawable.america);
+                try {
+                    //se guarda una imagen de resources  en disco
+                    WriteResourceFileToAndroidDataFile(R.raw.profile_image);
 
 
-                Intent shareIntent = new Intent();
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, "envio imagen de mi profile");
-                shareIntent.setType("application/image");
-                startActivity(Intent.createChooser(shareIntent, "Send mail..."));
+                    // String ur="content://" + getPackageName() + "/images/profile_image.jpg";
+                    String fileDirectory=getApplicationContext().getFilesDir()+File.separator+"images"+File.separator+"profile_image.jpg";
+                    File fileFromDisc=new File(fileDirectory);
 
-                //do somthing
+
+
+                    InputStream inputStream = getApplicationContext().getResources().openRawResource(R.raw.profile_image);
+
+                    File fileFromResource= File.createTempFile("jpg",".jpg");
+                    OutputStream ou = new FileOutputStream(fileFromResource);
+                    IOUtils.copyStream(inputStream, ou);
+                    ou.close();
+
+
+
+
+
+
+                    Uri ur=FileProvider.getUriForFile(this,"com.example.dani.mybookmasterdetail.fileprovider",fileFromDisc);
+
+                    //Uri uri= Uri.fromFile(f);
+                    // Uri uri=Uri.parse("R.drawable.america");
+                    // Uri contentUri = FileProvider.getUriForFile(this, "com.mydomain.fileprovider", f);
+                    //Uri imageUri = Uri.parse(ur);
+                    Intent shareIntent = new Intent();
+                    shareIntent.setAction(Intent.ACTION_SEND);
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, "Aplicació Android sobre llibres");
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, ur);
+                    shareIntent.setType("image/*");
+                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(shareIntent, "Compartir con"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
                 break;
             }case R.id.copy: {
 
@@ -515,17 +689,9 @@ public class BookListActivity extends AppCompatActivity implements DataSourceFir
 
             try {
 
-                View view;
-                if(positionCard%2==0) {
-                    view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.item_list_content_impar, parent, false);
+                View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_list_content_par, parent, false);
 
-                }else{
-                    view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.item_list_content_par, parent, false);
-                }
-
-                positionCard++;
                 return new ViewHolder(view);
 
             }catch (Exception e) {

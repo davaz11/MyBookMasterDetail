@@ -8,26 +8,23 @@
     tools:context=".BookListActivity">
 
 
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/app_bar"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:layout_height="@dimen/app_bar_height_small"
+        android:paddingLeft="5dp"
+        app:popupTheme="@style/AppTheme.PopupOverlay"
+        android:theme="@style/AppTheme">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:background="@color/colorBlack"
-            android:layout_height="?attr/actionBarSize"
-            android:paddingLeft="5dp"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-    </android.support.design.widget.AppBarLayout>
+    </android.support.v7.widget.Toolbar>
+
 
     <FrameLayout
         android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/app_bar_height_small"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <include layout="@layout/item_list" />
